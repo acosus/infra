@@ -46,7 +46,7 @@ services:
 
   ml-model:
     build:
-      context: ../ml-model
+      context: ../model
       dockerfile: Dockerfile
     expose:
       - "5000"
@@ -54,7 +54,7 @@ services:
       - MODELENV=production
       - FLASK_HOST=0.0.0.0
     env_file:
-      - ../ml-model/.env
+      - ../model/.env
     restart: unless-stopped
     networks:
       - ml
