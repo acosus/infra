@@ -1,0 +1,69 @@
+version: "3.8"
+
+services:
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    depends_on:
+      - backend
+      - ml-model
+    networks:
+      - frontend
+      - backend
+      - ml
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "10"
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    expose:
+      - "3000"
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - ../backend/.env
+    restart: unless-stopped
+    networks:
+      - backend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "10"
+
+  ml-model:
+    build:
+      context: ../ml-model
+      dockerfile: Dockerfile
+    expose:
+      - "5000"
+    environment:
+      - MODELENV=production
+      - FLASK_HOST=0.0.0.0
+    env_file:
+      - ../ml-model/.env
+    restart: unless-stopped
+    networks:
+      - ml
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "10"
+
+networks:
+  frontend:
+  backend:
+  ml:
