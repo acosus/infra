@@ -37,6 +37,7 @@ services:
     restart: unless-stopped
     networks:
       - backend
+      - ml
     logging:
       driver: "json-file"
       options:
@@ -57,6 +58,7 @@ services:
     restart: unless-stopped
     networks:
       - ml
+      - backend
     logging:
       driver: "json-file"
       options:
