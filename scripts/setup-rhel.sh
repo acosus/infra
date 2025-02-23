@@ -255,7 +255,8 @@ EOF
     # Source VALID_SERVICES from .env.example
     if [ -f "$PROJECT_ROOT/infra/.env.example" ]; then
         sudo -u deploy cp "$PROJECT_ROOT/infra/.env.example" "$PROJECT_ROOT/.env"
-        sudo -u deploy bash -c "source $PROJECT_ROOT/.env"
+        # Export variables from .env file
+        export $(sudo -u deploy cat "$PROJECT_ROOT/.env" | grep -v '^#' | xargs)
     else
         log "Error: .env.example not found in infra repository"
         return 1
