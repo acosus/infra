@@ -252,7 +252,6 @@ setup_infra_repo() {
             git clone https://github.com/acosus/infra.git infra
         fi
 EOF
-    sudo chown -R deploy:deploy "$PROJECT_ROOT" 
     # Source VALID_SERVICES from .env.example
     if [ -f "$PROJECT_ROOT/infra/.env.example" ]; then
         sudo -u deploy cp "$PROJECT_ROOT/infra/.env.example" "$PROJECT_ROOT/.env"
