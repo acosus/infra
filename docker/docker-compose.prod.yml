@@ -2,9 +2,12 @@ version: "3.8"
 
 services:
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    # build:
+    # context: ../frontend
+    # dockerfile: Dockerfile
+    image: ${DOCKER_USERNAME}/frontend:${GITHUB_SHA}
+    env_file:
+      - ../frontend/.env
     ports:
       - "80:80"
       - "443:443"
@@ -18,6 +21,8 @@ services:
       - frontend
       - backend
       - ml
+    volumes:
+      - ./ssl:/etc/ssl:ro
     logging:
       driver: "json-file"
       options:
@@ -25,9 +30,10 @@ services:
         max-file: "10"
 
   backend:
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
+    # build:
+    # context: ../backend
+    # dockerfile: Dockerfile
+    image: ${DOCKER_USERNAME}/backend:${GITHUB_SHA}
     expose:
       - "3000"
     environment:
@@ -45,9 +51,10 @@ services:
         max-file: "10"
 
   ml-model:
-    build:
-      context: ../model
-      dockerfile: Dockerfile
+    # build:
+    # context: ../model
+    # dockerfile: Dockerfile
+    image: ${DOCKER_USERNAME}/model:${GITHUB_SHA}
     expose:
       - "5000"
     environment:
@@ -56,6 +63,8 @@ services:
     env_file:
       - ../model/.env
     restart: unless-stopped
+    volumes:
+      - ml_models:/app/models
     networks:
       - ml
       - backend
@@ -69,3 +78,7 @@ networks:
   frontend:
   backend:
   ml:
+
+volumes:
+  ml_models:
+    driver: local
