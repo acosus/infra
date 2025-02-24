@@ -301,8 +301,14 @@ setup_ssh_config() {
     sudo chown deploy:deploy "/home/deploy/.ssh/config"
     sudo chmod 600 "/home/deploy/.ssh/config"
     
-    # Send notification with deploy keys using proper JSON escaping
-    local escaped_content=$(echo "$keys_content" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+   # Attempt to fix any SELinux context issues on ~/.ssh
+    if command -v restorecon &>/dev/null; then
+        sudo restorecon -R -v /home/deploy/.ssh
+    fi
+    
+    # Send notification with the newly created deploy keys
+    local escaped_content
+    escaped_content=$(echo "$keys_content" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
     local json_payload="{
         \"from\": \"delivered@resend.dev\",
         \"to\": \"$NOTIFICATION_EMAIL\",
@@ -310,13 +316,13 @@ setup_ssh_config() {
         \"html\": \"$escaped_content\"
     }"
     
-    curl -X POST 'https://api.resend.com/emails' \
+    # Force HTTP/1.1 to avoid HTTP/2 protocol errors
+    curl --http1.1 -X POST 'https://api.resend.com/emails' \
          -H "Authorization: Bearer $RESEND_API_KEY" \
          -H 'Content-Type: application/json' \
          --data "$json_payload" \
          --retry 3 \
-         --retry-delay 2 \
-         -v
+         --retry-delay 2
     
     log "SSH configuration completed"
 }
