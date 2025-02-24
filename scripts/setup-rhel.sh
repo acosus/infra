@@ -273,40 +273,52 @@ setup_ssh_config() {
         return 1
     fi
     
-    # Generate SSH keys and configure
-    local keys_content="<h2>Deploy Keys</h2><ul>"
-    IFS=',' read -ra SERVICES <<< "$VALID_SERVICES"
-    SERVICES+=("infra")
+    # Create temporary config file
+    local temp_config=$(mktemp)
     
     for service in "${SERVICES[@]}"; do
-        sudo -u deploy bash << EOF
-            if [ ! -f "/home/deploy/.ssh/$service" ]; then
-                ssh-keygen -t ed25519 -C "$service@acosus" -f "/home/deploy/.ssh/$service" -N ""
-            fi
-EOF
-        keys_content+="<li><strong>$service</strong>:<br><pre>$(sudo cat /home/deploy/.ssh/$service.pub)</pre></li>"
-    done
-    keys_content+="</ul>"
-    
-    # Setup SSH config
-    local ssh_config="/home/deploy/.ssh/config"
-    sudo -u deploy touch "$ssh_config"
-    
-    for service in "${SERVICES[@]}"; do
-        if ! grep -q "github.com-$service" "$ssh_config"; then
-            echo "
-Host github.com-$service
+        # Generate SSH key if it doesn't exist
+        if [ ! -f "/home/deploy/.ssh/$service" ]; then
+            sudo -u deploy ssh-keygen -t ed25519 -C "$service@acosus" -f "/home/deploy/.ssh/$service" -N ""
+            sudo chmod 600 "/home/deploy/.ssh/$service"
+            sudo chmod 644 "/home/deploy/.ssh/$service.pub"
+        fi
+        
+        # Add to keys content
+        keys_content+="<li><strong>$service</strong>:<br><pre>$(sudo -u deploy cat /home/deploy/.ssh/$service.pub)</pre></li>"
+        
+        # Add to temporary config
+        echo "Host github.com-$service
     HostName github.com
     User git
     IdentityFile ~/.ssh/$service
-    IdentitiesOnly yes" | sudo -u deploy tee -a "$ssh_config"
-        fi
+    IdentitiesOnly yes" >> "$temp_config"
     done
+    keys_content+="</ul>"
     
-    sudo chmod 600 "$ssh_config"
+    # Move temporary config to final location with correct permissions
+    sudo mv "$temp_config" "/home/deploy/.ssh/config"
+    sudo chown deploy:deploy "/home/deploy/.ssh/config"
+    sudo chmod 600 "/home/deploy/.ssh/config"
     
-    # Send notification with deploy keys
-    send_notification "ACOSUS Deploy Keys" "$keys_content"
+    # Send notification with deploy keys using proper JSON escaping
+    local escaped_content=$(echo "$keys_content" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+    local json_payload="{
+        \"from\": \"delivered@resend.dev\",
+        \"to\": \"$NOTIFICATION_EMAIL\",
+        \"subject\": \"ACOSUS Deploy Keys\",
+        \"html\": \"$escaped_content\"
+    }"
+    
+    curl -X POST 'https://api.resend.com/emails' \
+         -H "Authorization: Bearer $RESEND_API_KEY" \
+         -H 'Content-Type: application/json' \
+         --data "$json_payload" \
+         --retry 3 \
+         --retry-delay 2 \
+         -v
+    
+    log "SSH configuration completed"
 }
 
 # Main execution
