@@ -104,7 +104,7 @@ send_notification() {
      -H "Authorization: Bearer $RESEND_API_KEY" \
      -H 'Content-Type: application/json' \
      -d "{
-        \"from\": \"acosus@deployed.com\",
+        \"from\": \"delivered@resend.dev\",
         \"to\": \"$NOTIFICATION_EMAIL\",
         \"subject\": \"$subject\",
         \"html\": \"$content\"
