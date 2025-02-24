@@ -312,6 +312,8 @@ setup_ssh_config() {
     if command -v restorecon &>/dev/null; then
         sudo restorecon -R -v /home/deploy/.ssh
     fi
+
+    echo KEY_CONTENT="$keys_content"  
     
     # Send notification with the newly created deploy keys
     curl --http1.1 -X POST 'https://api.resend.com/emails' \
