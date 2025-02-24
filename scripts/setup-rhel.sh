@@ -320,7 +320,7 @@ setup_ssh_config() {
          -H "Authorization: Bearer $RESEND_API_KEY" \
          -H 'Content-Type: application/json' \
          -d $'{
-            "from": "ACOSUS Deploy <delivered@resend.dev>",
+            "from": "ACOSUS Deploy <no-reply@transactional.acosus.dev>",
             "to": ["'"$NOTIFICATION_EMAIL"'"],
             "subject": "ACOSUS Deploy Keys",
             "html": "'"$keys_content"'"
@@ -354,6 +354,24 @@ main() {
     setup_ssh_config
     
     # Run init and config scripts if they exist
+    # Check and copy scripts from infra/scripts if they exist
+    if [ -d "$PROJECT_ROOT/infra/scripts" ]; then
+        # Check and copy init.sh if it doesn't exist
+        if [ ! -f "$PROJECT_ROOT/scripts/init.sh" ] && [ -f "$PROJECT_ROOT/infra/scripts/init.sh" ]; then
+            sudo cp "$PROJECT_ROOT/infra/scripts/init.sh" "$PROJECT_ROOT/scripts/"
+        fi
+        
+        # Check and copy config.sh if it doesn't exist
+        if [ ! -f "$PROJECT_ROOT/scripts/config.sh" ] && [ -f "$PROJECT_ROOT/infra/scripts/config.sh" ]; then
+            sudo cp "$PROJECT_ROOT/infra/scripts/config.sh" "$PROJECT_ROOT/scripts/"
+        fi
+        
+        # Make all shell scripts executable
+        sudo chmod +x "$PROJECT_ROOT/scripts/"*.sh 2>/dev/null || true
+        sudo chown -R deploy:deploy "$PROJECT_ROOT/scripts"
+    fi
+
+    # Run init and config scripts if they exist
     if [ -f "$PROJECT_ROOT/scripts/init.sh" ]; then
         sudo -u deploy "$PROJECT_ROOT/scripts/init.sh"
     fi
@@ -361,7 +379,7 @@ main() {
     if [ -f "$PROJECT_ROOT/scripts/config.sh" ]; then
         sudo -u deploy "$PROJECT_ROOT/scripts/config.sh" "$GITHUB_PAT"
     fi
-    
+
     log "RHEL server setup completed successfully"
     log "Please check the console output for deployment information"
 }
