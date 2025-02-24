@@ -273,6 +273,13 @@ setup_ssh_config() {
         return 1
     fi
     
+    # Initialize services array from VALID_SERVICES
+    IFS=',' read -ra SERVICES <<< "$VALID_SERVICES"
+    SERVICES+=("infra")
+    
+    # Initialize keys_content
+    local keys_content="<h2>Deploy Keys</h2><ul>"
+    
     # Create temporary config file
     local temp_config=$(mktemp)
     
@@ -301,20 +308,23 @@ setup_ssh_config() {
     sudo chown deploy:deploy "/home/deploy/.ssh/config"
     sudo chmod 600 "/home/deploy/.ssh/config"
     
-   # Attempt to fix any SELinux context issues on ~/.ssh
+    # Attempt to fix any SELinux context issues on ~/.ssh
     if command -v restorecon &>/dev/null; then
         sudo restorecon -R -v /home/deploy/.ssh
     fi
     
     # Send notification with the newly created deploy keys
-    local escaped_content
-    escaped_content=$(echo "$keys_content" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
-    local json_payload="{
-        \"from\": \"delivered@resend.dev\",
-        \"to\": \"$NOTIFICATION_EMAIL\",
-        \"subject\": \"ACOSUS Deploy Keys\",
-        \"html\": \"$escaped_content\"
-    }"
+    # Create JSON payload carefully to ensure proper escaping
+    local json_payload
+    json_payload=$(cat << EOF
+{
+    "from": "delivered@resend.dev",
+    "to": "$NOTIFICATION_EMAIL",
+    "subject": "ACOSUS Deploy Keys",
+    "html": $(printf '%s' "$keys_content" | jq -R -s '.')
+}
+EOF
+)
     
     # Force HTTP/1.1 to avoid HTTP/2 protocol errors
     curl --http1.1 -X POST 'https://api.resend.com/emails' \
