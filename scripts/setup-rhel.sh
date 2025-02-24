@@ -314,23 +314,15 @@ setup_ssh_config() {
     fi
     
     # Send notification with the newly created deploy keys
-    # Create JSON payload carefully to ensure proper escaping
-    local json_payload
-    json_payload=$(cat << EOF
-{
-    "from": "delivered@resend.dev",
-    "to": "$NOTIFICATION_EMAIL",
-    "subject": "ACOSUS Deploy Keys",
-    "html": $(printf '%s' "$keys_content" | jq -R -s '.')
-}
-EOF
-)
-    
-    # Force HTTP/1.1 to avoid HTTP/2 protocol errors
     curl --http1.1 -X POST 'https://api.resend.com/emails' \
          -H "Authorization: Bearer $RESEND_API_KEY" \
          -H 'Content-Type: application/json' \
-         --data "$json_payload" \
+         -d $'{
+            "from": "ACOSUS Deploy <delivered@resend.dev>",
+            "to": ["'"$NOTIFICATION_EMAIL"'"],
+            "subject": "ACOSUS Deploy Keys",
+            "html": "'"$keys_content"'"
+         }' \
          --retry 3 \
          --retry-delay 2
     
