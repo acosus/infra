@@ -23,6 +23,23 @@ log() {
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1"
 }
 
+# Function to check SELinux status and fix contexts
+check_selinux() {
+    if command -v getenforce &> /dev/null; then
+        local selinux_status=$(getenforce)
+        log "SELinux status: $selinux_status"
+        
+        if [ "$selinux_status" != "Disabled" ]; then
+            # Set correct context for project root
+            if [ -d "$PROJECT_ROOT" ]; then
+                log "Setting SELinux context for $PROJECT_ROOT"
+                sudo semanage fcontext -a -t httpd_sys_content_t "$PROJECT_ROOT(/.*)?"
+                sudo restorecon -Rv "$PROJECT_ROOT"
+            fi
+        fi
+    fi
+}
+
 # Function to check if a package is installed
 is_package_installed() {
     if rpm -q "$1" &> /dev/null; then
@@ -99,16 +116,24 @@ is_service_running() {
 send_notification() {
     local subject="$1"
     local content="$2"
+
+    # Escape special characters in content
+    content=$(echo "$content" | sed 's/"/\\"/g')
+
+    local payload='{
+        "from": "ACOSUS Deploy <no-reply@transactional.acosus.dev>",
+        "to": ["'"$NOTIFICATION_EMAIL"'"],
+        "subject": "'"$subject"'",
+        "html": "'"$content"'"
+    }'
+    log "Sending notification with payload: $payload"
     
-    curl -X POST 'https://api.resend.com/emails' \
-     -H "Authorization: Bearer $RESEND_API_KEY" \
-     -H 'Content-Type: application/json' \
-     -d "{
-        \"from\": \"delivered@resend.dev\",
-        \"to\": \"$NOTIFICATION_EMAIL\",
-        \"subject\": \"$subject\",
-        \"html\": \"$content\"
-     }"
+    local response=$(curl -X POST 'https://api.resend.com/emails' \
+         -H "Authorization: Bearer $RESEND_API_KEY" \
+         -H 'Content-Type: application/json' \
+         -d "$payload" | jq)
+
+    log "Resend API response: $response"
 }
 
 # Function to setup deploy user
@@ -284,8 +309,13 @@ setup_ssh_config() {
     local temp_config=$(mktemp)
     
     for service in "${SERVICES[@]}"; do
+
+    # Check if key already exists
+        if [ -f "/home/deploy/.ssh/$service" ] && [ -f "/home/deploy/.ssh/$service.pub" ]; then
+            log "Using existing SSH key for $service"
+        else
         # Generate SSH key if it doesn't exist
-        if [ ! -f "/home/deploy/.ssh/$service" ]; then
+            log "Generating SSH key for $service"
             sudo -u deploy ssh-keygen -t ed25519 -C "$service@acosus" -f "/home/deploy/.ssh/$service" -N ""
             sudo chmod 600 "/home/deploy/.ssh/$service"
             sudo chmod 644 "/home/deploy/.ssh/$service.pub"
@@ -308,12 +338,15 @@ setup_ssh_config() {
     sudo chown deploy:deploy "/home/deploy/.ssh/config"
     sudo chmod 600 "/home/deploy/.ssh/config"
     
-    # Attempt to fix any SELinux context issues on ~/.ssh
+    # Fix SELinux context for SSH directory
     if command -v restorecon &>/dev/null; then
-        sudo restorecon -R -v /home/deploy/.ssh
+        log "Fixing SELinux context for SSH directory"
+        sudo restorecon -Rv /home/deploy/.ssh
     fi
 
-    echo KEY_CONTENT="$keys_content"  
+
+    # Send notification with the keys
+    send_notification "ACOSUS Deploy Keys" "$keys_content"
     
     # Send notification with the newly created deploy keys
     curl --http1.1 -X POST 'https://api.resend.com/emails' \
@@ -326,7 +359,7 @@ setup_ssh_config() {
             "html": "'"$keys_content"'"
          }' \
          --retry 3 \
-         --retry-delay 2
+         --retry-delay 2 | jq
     
     log "SSH configuration completed"
 }
@@ -334,6 +367,9 @@ setup_ssh_config() {
 # Main execution
 main() {
     log "Starting RHEL server setup..."
+
+    # Check SELinux status and fix contexts
+    check_selinux
 
     # Fetch required secrets first
     fetch_required_secrets || exit 1
@@ -352,33 +388,41 @@ main() {
     
     # Setup SSH configuration
     setup_ssh_config
-    
-    # Run init and config scripts if they exist
-    # Check and copy scripts from infra/scripts if they exist
-    if [ -d "$PROJECT_ROOT/infra/scripts" ]; then
-        # Check and copy init.sh if it doesn't exist
-        if [ ! -f "$PROJECT_ROOT/scripts/init.sh" ] && [ -f "$PROJECT_ROOT/infra/scripts/init.sh" ]; then
-            sudo cp "$PROJECT_ROOT/infra/scripts/init.sh" "$PROJECT_ROOT/scripts/"
-        fi
-        
-        # Check and copy config.sh if it doesn't exist
-        if [ ! -f "$PROJECT_ROOT/scripts/config.sh" ] && [ -f "$PROJECT_ROOT/infra/scripts/config.sh" ]; then
-            sudo cp "$PROJECT_ROOT/infra/scripts/config.sh" "$PROJECT_ROOT/scripts/"
-        fi
-        
-        # Make all shell scripts executable
-        sudo chmod +x "$PROJECT_ROOT/scripts/"*.sh 2>/dev/null || true
-        sudo chown -R deploy:deploy "$PROJECT_ROOT/scripts"
-    fi
 
-    # Run init and config scripts if they exist
-    if [ -f "$PROJECT_ROOT/scripts/init.sh" ]; then
-        sudo -u deploy "$PROJECT_ROOT/scripts/init.sh"
-    fi
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    #                                                                           #
+    #  CANT RUN BELOW CODE AS IT REQUIRES THE DEPLOY_KEY TO BE ADDED TO GITHUB  #
+    #                                                                           #
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+    # # Run init and config scripts if they exist
+    # # Check and copy scripts from infra/scripts if they exist
+    # if [ -d "$PROJECT_ROOT/infra/scripts" ]; then
+    #     # Check and copy init.sh if it doesn't exist
+    #     if [ ! -f "$PROJECT_ROOT/scripts/init.sh" ] && [ -f "$PROJECT_ROOT/infra/scripts/init.sh" ]; then
+    #         sudo cp "$PROJECT_ROOT/infra/scripts/init.sh" "$PROJECT_ROOT/scripts/"
+    #     fi
+        
+    #     # Check and copy config.sh if it doesn't exist
+    #     if [ ! -f "$PROJECT_ROOT/scripts/config.sh" ] && [ -f "$PROJECT_ROOT/infra/scripts/config.sh" ]; then
+    #         sudo cp "$PROJECT_ROOT/infra/scripts/config.sh" "$PROJECT_ROOT/scripts/"
+    #     fi
+        
+    #     # Make all shell scripts executable
+    #     sudo chmod +x "$PROJECT_ROOT/scripts/"*.sh 2>/dev/null || true
+    #     sudo chown -R deploy:deploy "$PROJECT_ROOT/scripts"
+    # fi
+
+    # # Run init and config scripts if they exist
+    # if [ -f "$PROJECT_ROOT/scripts/init.sh" ]; then
+    #     sudo -u deploy "$PROJECT_ROOT/scripts/init.sh"
+    # fi
     
-    if [ -f "$PROJECT_ROOT/scripts/config.sh" ]; then
-        sudo -u deploy "$PROJECT_ROOT/scripts/config.sh" "$GITHUB_PAT"
-    fi
+    # if [ -f "$PROJECT_ROOT/scripts/config.sh" ]; then
+    #     sudo -u deploy "$PROJECT_ROOT/scripts/config.sh" "$GITHUB_PAT"
+    # fi
+
+    check_selinux
 
     log "RHEL server setup completed successfully"
     log "Please check the console output for deployment information"

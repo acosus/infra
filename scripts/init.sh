@@ -9,6 +9,20 @@ log() {
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1"
 }
 
+# Function to check SELinux status and fix contexts
+check_selinux() {
+    if command -v getenforce &> /dev/null; then
+        local selinux_status=$(getenforce)
+        log "SELinux status: $selinux_status"
+        
+        if [ "$selinux_status" != "Disabled" ]; then
+            log "Setting SELinux context for project directories"
+            sudo -n semanage fcontext -a -t httpd_sys_content_t "$PROJECT_ROOT(/.*)?"
+            sudo -n restorecon -Rv "$PROJECT_ROOT"
+        fi
+    fi
+}
+
 # Function to validate project structure
 validate_structure() {
     local required_dirs=("ssl" "logs" "backups" "docker" "scripts")
@@ -26,6 +40,34 @@ validate_structure() {
     fi
     
     return 0
+}
+
+# Function to create service directories and clone repositories
+clone_service_directories() {
+    log "Creating service directories..."
+    source "$PROJECT_ROOT/.env"
+    
+    if [ -z "$VALID_SERVICES" ]; then
+        log "Warning: VALID_SERVICES not defined in .env"
+        return 1
+    fi
+    
+    IFS=',' read -ra SERVICES <<< "$VALID_SERVICES"
+    for service in "${SERVICES[@]}"; do
+        if [ ! -d "$PROJECT_ROOT/$service" ]; then
+            log "Creating directory for service: $service"
+            mkdir -p "$PROJECT_ROOT/$service"
+            chmod 755 "$PROJECT_ROOT/$service"
+            
+            # Clone the repository using the specific SSH config
+            if [ -f ~/.ssh/$service ]; then
+                git clone git@github.com-$service:acosus/$service.git "$PROJECT_ROOT/$service"
+                log "Cloned repository for service: $service"
+            else
+                log "Warning: SSH key ~/.ssh/$service not found"
+            fi
+        fi
+    done
 }
 
 # Function to copy infra files
@@ -105,9 +147,12 @@ validate_services() {
 setup_logging() {
     log "Setting up logging configuration..."
     
-    # Create logrotate configuration if it doesn't exist
+    # Create logrotate configuration using sudo -n (non-interactive)
     if [ ! -f "/etc/logrotate.d/acosus" ]; then
-        sudo tee /etc/logrotate.d/acosus > /dev/null << EOL
+        # Check if we have passwordless sudo for this specific command
+        if sudo -n true 2>/dev/null; then
+            log "Creating logrotate configuration..."
+            sudo -n tee /etc/logrotate.d/acosus > /dev/null << EOL
 /var/www/acosus/logs/*.log {
     daily
     rotate 7
@@ -118,7 +163,21 @@ setup_logging() {
     create 0640 deploy deploy
 }
 EOL
-        log "Created logrotate configuration"
+            log "Created logrotate configuration"
+        else
+            log "Warning: Cannot create logrotate configuration - sudo password required"
+            log "Please run: sudo tee /etc/logrotate.d/acosus > /dev/null << EOL
+/var/www/acosus/logs/*.log {
+    daily
+    rotate 7
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0640 deploy deploy
+}
+EOL"
+        fi
     fi
 }
 
@@ -134,15 +193,18 @@ main() {
     
     # Validate project structure
     validate_structure || exit 1
+
+    # Create service directories
+    clone_service_directories || exit 1
     
     # Copy infrastructure files
     copy_infra_files || exit 1
     
     # Setup SSL
-    setup_ssl || exit 1
+    # setup_ssl || exit 1
     
     # Validate services
-    validate_services
+    # validate_services
     
     # Setup logging
     setup_logging

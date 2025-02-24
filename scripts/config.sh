@@ -9,6 +9,32 @@ log() {
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1"
 }
 
+# Function to check SELinux status and fix contexts
+check_selinux() {
+    if command -v getenforce &> /dev/null; then
+        local selinux_status=$(getenforce)
+        log "SELinux status: $selinux_status"
+        
+        if [ "$selinux_status" != "Disabled" ]; then
+            log "Setting SELinux context for service directories"
+            sudo -n semanage fcontext -a -t httpd_sys_content_t "$PROJECT_ROOT(/.*)?"
+            sudo -n restorecon -Rv "$PROJECT_ROOT"
+        fi
+    fi
+}
+
+# Function to detect OS
+detect_os() {
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        OS=$NAME
+        log "Detected OS: $OS"
+    else
+        log "Warning: Unable to detect OS"
+        OS="Unknown"
+    fi
+}
+
 # Function to validate arguments
 validate_args() {
     if [ "$#" -ne 1 ]; then
@@ -140,6 +166,14 @@ check_dependencies() {
 # Main execution
 main() {
     log "Starting configuration process..."
+
+    # Detect OS
+    detect_os
+    
+    # Check SELinux on RHEL
+    if [[ "$OS" == *"Red Hat"* ]] || [[ "$OS" == *"CentOS"* ]]; then
+        check_selinux
+    fi
     
     # Validate arguments
     validate_args "$@" || exit 1
