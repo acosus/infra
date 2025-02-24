@@ -62,6 +62,34 @@ get_server_ip() {
     echo "$ip"
 }
 
+# Function to add deploy key to GitHub repository
+add_deploy_key_to_github() {
+    local repo=$1
+    local key_title=$2
+    local public_key=$3
+    
+    log "Adding deploy key to GitHub repository: $repo"
+    
+    # Create deploy key
+    local response=$(curl -s -X POST \
+        -H "Authorization: token $GITHUB_PAT" \
+        -H "Accept: application/vnd.github.v3+json" \
+        "https://api.github.com/repos/$GITHUB_OWNER/$repo/keys" \
+        -d "{
+            \"title\": \"$key_title\",
+            \"key\": \"$public_key\",
+            \"read_only\": false
+        }")
+    
+    if echo "$response" | jq -e '.id' > /dev/null; then
+        log "Successfully added deploy key to $repo"
+        return 0
+    else
+        log "Error adding deploy key to $repo: $(echo "$response" | jq -r '.message')"
+        return 1
+    fi
+}
+
 # Function to fetch secret from GitHub
 fetch_github_secret() {
     local secret_name=$1
@@ -88,18 +116,18 @@ fetch_required_secrets() {
     fi
     
     # Fetch Resend API key
-    RESEND_API_KEY=$(fetch_github_secret "RESEND_API_KEY")
-    if [ $? -ne 0 ]; then
-        log "Failed to fetch RESEND_API_KEY"
-        return 1
-    fi
+    # RESEND_API_KEY=$(fetch_github_secret "RESEND_API_KEY")
+    # if [ $? -ne 0 ]; then
+    #     log "Failed to fetch RESEND_API_KEY"
+    #     return 1
+    # fi
     
     # Fetch notification email
-    NOTIFICATION_EMAIL=$(fetch_github_secret "NOTIFICATION_EMAIL")
-    if [ $? -ne 0 ]; then
-        log "Failed to fetch NOTIFICATION_EMAIL"
-        return 1
-    fi 
+    # NOTIFICATION_EMAIL=$(fetch_github_secret "NOTIFICATION_EMAIL")
+    # if [ $? -ne 0 ]; then
+    #     log "Failed to fetch NOTIFICATION_EMAIL"
+    #     return 1
+    # fi 
 }
 
 
@@ -303,7 +331,7 @@ setup_ssh_config() {
     SERVICES+=("infra")
     
     # Initialize keys_content
-    local keys_content="<h2>Deploy Keys</h2><ul>"
+    # local keys_content="<h2>Deploy Keys</h2><ul>"
     
     # Create temporary config file
     local temp_config=$(mktemp)
@@ -321,8 +349,13 @@ setup_ssh_config() {
             sudo chmod 644 "/home/deploy/.ssh/$service.pub"
         fi
         
+        # Get public key content
+        local pub_key=$(cat "/home/deploy/.ssh/$service.pub")
+        
+        # Add deploy key to GitHub
+        add_deploy_key_to_github "$service" "Deploy Key ($server_ip) - $(date +%s)" "$pub_key"
         # Add to keys content
-        keys_content+="<li><strong>$service</strong>:<br><pre>$(sudo -u deploy cat /home/deploy/.ssh/$service.pub)</pre></li>"
+        # keys_content+="<li><strong>$service</strong>:<br><pre>$(sudo -u deploy cat /home/deploy/.ssh/$service.pub)</pre></li>"
         
         # Add to temporary config
         echo "Host github.com-$service
@@ -331,7 +364,7 @@ setup_ssh_config() {
     IdentityFile ~/.ssh/$service
     IdentitiesOnly yes" >> "$temp_config"
     done
-    keys_content+="</ul>"
+    # keys_content+="</ul>"
     
     # Move temporary config to final location with correct permissions
     sudo mv "$temp_config" "/home/deploy/.ssh/config"
@@ -346,20 +379,20 @@ setup_ssh_config() {
 
 
     # Send notification with the keys
-    send_notification "ACOSUS Deploy Keys" "$keys_content"
+    # send_notification "ACOSUS Deploy Keys" "$keys_content"
     
     # Send notification with the newly created deploy keys
-    curl --http1.1 -X POST 'https://api.resend.com/emails' \
-         -H "Authorization: Bearer $RESEND_API_KEY" \
-         -H 'Content-Type: application/json' \
-         -d $'{
-            "from": "ACOSUS Deploy <no-reply@transactional.acosus.dev>",
-            "to": ["'"$NOTIFICATION_EMAIL"'"],
-            "subject": "ACOSUS Deploy Keys",
-            "html": "'"$keys_content"'"
-         }' \
-         --retry 3 \
-         --retry-delay 2 | jq
+    # curl --http1.1 -X POST 'https://api.resend.com/emails' \
+    #      -H "Authorization: Bearer $RESEND_API_KEY" \
+    #      -H 'Content-Type: application/json' \
+    #      -d $'{
+    #         "from": "ACOSUS Deploy <no-reply@transactional.acosus.dev>",
+    #         "to": ["'"$NOTIFICATION_EMAIL"'"],
+    #         "subject": "ACOSUS Deploy Keys",
+    #         "html": "'"$keys_content"'"
+    #      }' \
+    #      --retry 3 \
+    #      --retry-delay 2 | jq
     
     log "SSH configuration completed"
 }
@@ -389,38 +422,32 @@ main() {
     # Setup SSH configuration
     setup_ssh_config
 
-    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-    #                                                                           #
-    #  CANT RUN BELOW CODE AS IT REQUIRES THE DEPLOY_KEY TO BE ADDED TO GITHUB  #
-    #                                                                           #
-    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-    # # Run init and config scripts if they exist
-    # # Check and copy scripts from infra/scripts if they exist
-    # if [ -d "$PROJECT_ROOT/infra/scripts" ]; then
-    #     # Check and copy init.sh if it doesn't exist
-    #     if [ ! -f "$PROJECT_ROOT/scripts/init.sh" ] && [ -f "$PROJECT_ROOT/infra/scripts/init.sh" ]; then
-    #         sudo cp "$PROJECT_ROOT/infra/scripts/init.sh" "$PROJECT_ROOT/scripts/"
-    #     fi
+    # Check and copy scripts from infra/scripts if they exist
+    if [ -d "$PROJECT_ROOT/infra/scripts" ]; then
+        # Check and copy init.sh if it doesn't exist
+        if [ ! -f "$PROJECT_ROOT/scripts/init.sh" ] && [ -f "$PROJECT_ROOT/infra/scripts/init.sh" ]; then
+            sudo cp "$PROJECT_ROOT/infra/scripts/init.sh" "$PROJECT_ROOT/scripts/"
+        fi
         
-    #     # Check and copy config.sh if it doesn't exist
-    #     if [ ! -f "$PROJECT_ROOT/scripts/config.sh" ] && [ -f "$PROJECT_ROOT/infra/scripts/config.sh" ]; then
-    #         sudo cp "$PROJECT_ROOT/infra/scripts/config.sh" "$PROJECT_ROOT/scripts/"
-    #     fi
+        # Check and copy config.sh if it doesn't exist
+        if [ ! -f "$PROJECT_ROOT/scripts/config.sh" ] && [ -f "$PROJECT_ROOT/infra/scripts/config.sh" ]; then
+            sudo cp "$PROJECT_ROOT/infra/scripts/config.sh" "$PROJECT_ROOT/scripts/"
+        fi
         
-    #     # Make all shell scripts executable
-    #     sudo chmod +x "$PROJECT_ROOT/scripts/"*.sh 2>/dev/null || true
-    #     sudo chown -R deploy:deploy "$PROJECT_ROOT/scripts"
-    # fi
+        # Make all shell scripts executable
+        sudo chmod +x "$PROJECT_ROOT/scripts/"*.sh 2>/dev/null || true
+        sudo chown -R deploy:deploy "$PROJECT_ROOT/scripts"
+    fi
 
-    # # Run init and config scripts if they exist
-    # if [ -f "$PROJECT_ROOT/scripts/init.sh" ]; then
-    #     sudo -u deploy "$PROJECT_ROOT/scripts/init.sh"
-    # fi
+    # Run init and config scripts if they exist
+    if [ -f "$PROJECT_ROOT/scripts/init.sh" ]; then
+        sudo -u deploy "$PROJECT_ROOT/scripts/init.sh"
+    fi
     
-    # if [ -f "$PROJECT_ROOT/scripts/config.sh" ]; then
-    #     sudo -u deploy "$PROJECT_ROOT/scripts/config.sh" "$GITHUB_PAT"
-    # fi
+    if [ -f "$PROJECT_ROOT/scripts/config.sh" ]; then
+        sudo -u deploy "$PROJECT_ROOT/scripts/config.sh" "$GITHUB_PAT"
+    fi
 
     check_selinux
 
