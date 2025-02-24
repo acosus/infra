@@ -69,17 +69,21 @@ add_deploy_key_to_github() {
     local public_key=$3
     
     log "Adding deploy key to GitHub repository: $repo"
+
+    log "Key title: $key_title"
+    log "Public key: $public_key"
     
     # Create deploy key
     local response=$(curl -s -X POST \
-        -H "Authorization: token $GITHUB_PAT" \
-        -H "Accept: application/vnd.github.v3+json" \
+        -H "Accept: application/vnd.github+json" \
+        -H "Authorization: Bearer $GITHUB_PAT" \
+        -H "X-GitHub-Api-Version: 2022-11-28" \
         "https://api.github.com/repos/$GITHUB_OWNER/$repo/keys" \
         -d "{
             \"title\": \"$key_title\",
             \"key\": \"$public_key\",
-            \"read_only\": false
-        }")
+            \"read_only\": true
+        }" | jq)
     
     if echo "$response" | jq -e '.id' > /dev/null; then
         log "Successfully added deploy key to $repo"
@@ -350,7 +354,7 @@ setup_ssh_config() {
         fi
         
         # Get public key content
-        local pub_key=$(cat "/home/deploy/.ssh/$service.pub")
+        local pub_key=$(sudo -u deploy cat "/home/deploy/.ssh/$service.pub")
         
         # Add deploy key to GitHub
         add_deploy_key_to_github "$service" "Deploy Key ($server_ip) - $(date +%s)" "$pub_key"
