@@ -38,6 +38,7 @@ services:
       - "3000"
     environment:
       - NODE_ENV=production
+      - ML_ROOT_URL=http://ml-model:5051
     env_file:
       - ../backend/.env
     restart: unless-stopped
@@ -56,10 +57,13 @@ services:
     # dockerfile: Dockerfile
     image: ${DOCKER_USERNAME}/model:${GITHUB_SHA}
     expose:
-      - "5000"
+      - "5051"
     environment:
       - MODELENV=production
       - FLASK_HOST=0.0.0.0
+      - FLASK_PORT=5051
+      - EXPRESS_URL=http://backend:3000
+      - USE_HARDCODED_DATA=False
     env_file:
       - ../model/.env
     restart: unless-stopped
