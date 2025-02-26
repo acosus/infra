@@ -5,7 +5,7 @@ services:
     # build:
     # context: ../frontend
     # dockerfile: Dockerfile
-    image: ${DOCKER_USERNAME}/frontend:${GITHUB_SHA}
+    image: ${DOCKER_USERNAME}/frontend:latest
     env_file:
       - ../frontend/.env
     ports:
@@ -35,7 +35,7 @@ services:
     # build:
     # context: ../backend
     # dockerfile: Dockerfile
-    image: ${DOCKER_USERNAME}/backend:${GITHUB_SHA}
+    image: ${DOCKER_USERNAME}/backend:latest
     expose:
       - "3000"
     environment:
@@ -58,7 +58,7 @@ services:
     # build:
     # context: ../model
     # dockerfile: Dockerfile
-    image: ${DOCKER_USERNAME}/model:${GITHUB_SHA}
+    image: ${DOCKER_USERNAME}/model:latest
     expose:
       - "5051"
     environment:
@@ -73,6 +73,7 @@ services:
     restart: unless-stopped
     volumes:
       - ml_models:/app/models
+      - ~/app/data/ml-models:/app/infra/model/models
     networks:
       - ml
       - backend
