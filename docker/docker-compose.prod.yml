@@ -18,7 +18,7 @@ services:
     restart: unless-stopped
     depends_on:
       - backend
-      - ml-model
+      - model
     networks:
       - frontend
       - backend
@@ -40,7 +40,7 @@ services:
       - "3000"
     environment:
       - NODE_ENV=production
-      - ML_ROOT_URL=http://ml-model:5051
+      - ML_ROOT_URL=http://model:5051
       - CORS_ORIGIN=${CORS_ORIGIN}
     env_file:
       - ../backend/.env
@@ -54,7 +54,7 @@ services:
         max-size: "200m"
         max-file: "10"
 
-  ml-model:
+  model:
     # build:
     # context: ../model
     # dockerfile: Dockerfile
@@ -72,8 +72,8 @@ services:
       - ../model/.env
     restart: unless-stopped
     volumes:
-      - ml_models:/app/models
-      - ~/app/data/ml-models:/app/infra/model/models
+      - models:/app/models
+      - ~/app/data/models:/app/infra/model/models
     networks:
       - ml
       - backend
@@ -89,5 +89,5 @@ networks:
   ml:
 
 volumes:
-  ml_models:
+  models:
     driver: local
