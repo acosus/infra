@@ -6,6 +6,7 @@ services:
     # context: ../frontend
     # dockerfile: Dockerfile
     image: ${DOCKER_USERNAME}/frontend:latest
+    container_name: frontend
     env_file:
       - ../frontend/.env
     ports:
@@ -16,6 +17,9 @@ services:
       # NO NEED TO SET VITE_API_URL HERE BECAUSE NGINX WILL HANDLE THE PROXY
       - VITE_API_URL=http://backend:3000
     restart: unless-stopped
+    volumes:
+      - ${SSL_CERT_PATH:-/home/app/infra/ssl/fullchain.pem}:/etc/nginx/ssl/fullchain.pem
+      - ${SSL_KEY_PATH:-/home/app/infra/ssl/privkey.pem}:/etc/nginx/ssl/privkey.pem
     depends_on:
       - backend
       - model
@@ -23,8 +27,6 @@ services:
       - frontend
       - backend
       - ml
-    # volumes:
-    # - ./ssl:/etc/ssl:ro
     logging:
       driver: "json-file"
       options:
@@ -36,6 +38,7 @@ services:
     # context: ../backend
     # dockerfile: Dockerfile
     image: ${DOCKER_USERNAME}/backend:latest
+    container_name: backend
     expose:
       - "3000"
     environment:
@@ -59,6 +62,7 @@ services:
     # context: ../model
     # dockerfile: Dockerfile
     image: ${DOCKER_USERNAME}/model:latest
+    container_name: model
     expose:
       - "5051"
     environment:
