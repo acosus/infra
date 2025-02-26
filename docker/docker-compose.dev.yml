@@ -1,19 +1,13 @@
 version: "3.8"
-
 services:
   frontend:
-    # build:
-    # context: ../frontend
-    # dockerfile: Dockerfile
-    image: ${DOCKER_USERNAME}/frontend:${GITHUB_SHA}
-    env_file:
-      - ../frontend/.env
+    build:
+      context: ../../frontend
+      dockerfile: Dockerfile.dev
     ports:
-      - "80:80"
-      - "443:443"
+      - "5173:5173"
     environment:
-      - NODE_ENV=production
-      # NO NEED TO SET VITE_API_URL HERE BECAUSE NGINX WILL HANDLE THE PROXY
+      - NODE_ENV=development
       - VITE_API_URL=http://backend:3000
     restart: unless-stopped
     depends_on:
@@ -24,7 +18,12 @@ services:
       - backend
       - ml
     volumes:
-      # - ./ssl:/etc/ssl:ro
+      # - ../ssl:/etc/ssl:ro
+      # For hot reloading during development (optional)
+      - ../../frontend:/app
+      # This is to avoid mounting node_modules in the frontend container
+      - /app/node_modules
+      # This makes sure that the container uses the .env file that was set up in the Dockerfile.dev
     logging:
       driver: "json-file"
       options:
@@ -32,22 +31,23 @@ services:
         max-file: "10"
 
   backend:
-    # build:
-    # context: ../backend
-    # dockerfile: Dockerfile
-    image: ${DOCKER_USERNAME}/backend:${GITHUB_SHA}
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile.dev
     expose:
       - "3000"
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
       - ML_ROOT_URL=http://ml-model:5051
-      - CORS_ORIGIN=${CORS_ORIGIN}
     env_file:
-      - ../backend/.env
+      - ../../backend/.env
     restart: unless-stopped
     networks:
       - backend
       - ml
+    volumes:
+      # For hot reloading during development (optional)
+      - ../../backend/src:/app/src
     logging:
       driver: "json-file"
       options:
@@ -55,24 +55,25 @@ services:
         max-file: "10"
 
   ml-model:
-    # build:
-    # context: ../model
-    # dockerfile: Dockerfile
-    image: ${DOCKER_USERNAME}/model:${GITHUB_SHA}
+    build:
+      context: ../../model
+      dockerfile: Dockerfile.dev
     expose:
       - "5051"
     environment:
-      - MODELENV=production
+      - MODELENV=development
       - FLASK_HOST=0.0.0.0
       - FLASK_PORT=5051
       - EXPRESS_URL=http://backend:3000
       - USE_HARDCODED_DATA=False
-      - FLASK_DEBUG=False
+      - FLASK_DEBUG=True
     env_file:
-      - ../model/.env
+      - ../../model/.env
     restart: unless-stopped
     volumes:
       - ml_models:/app/models
+      # For hot reloading during development (optional)
+      - ../../model:/app
     networks:
       - ml
       - backend
