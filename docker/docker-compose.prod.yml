@@ -23,8 +23,8 @@ services:
       - frontend
       - backend
       - ml
-    volumes:
-      # - ./ssl:/etc/ssl:ro
+    # volumes:
+    # - ./ssl:/etc/ssl:ro
     logging:
       driver: "json-file"
       options:
