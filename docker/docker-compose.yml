@@ -1,0 +1,304 @@
+# docker-compose.prod.yml
+version: "3.8"
+services:
+  # Frontend instances
+  frontend-1:
+    image: ${DOCKER_USERNAME}/frontend:latest-prod
+    container_name: frontend-1
+    env_file:
+      - ../frontend/.env
+    ports:
+      - "8081:80"
+    environment:
+      - NODE_ENV=production
+      - VITE_API_URL=/api # Use relative path for API
+    restart: unless-stopped
+    depends_on:
+      - backend-1
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 1G
+    networks:
+      - frontend
+      - backend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "10"
+
+  frontend-2:
+    image: ${DOCKER_USERNAME}/frontend:latest-prod
+    container_name: frontend-2
+    env_file:
+      - ../frontend/.env
+    ports:
+      - "8082:80"
+    environment:
+      - NODE_ENV=production
+      - VITE_API_URL=/api
+    restart: unless-stopped
+    depends_on:
+      - backend-2
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 1G
+    networks:
+      - frontend
+      - backend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "10"
+
+  # Backend instances with worker clustering
+  backend-1:
+    image: ${DOCKER_USERNAME}/backend:latest-prod
+    container_name: backend-1
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+      - ML_ROOT_URL=http://model-1:5051
+      - WORKERS=4
+      - TRUST_PROXY=1
+      - ACCESS_TOKEN_EXPIRES_IN=1d
+      - REFRESH_TOKEN_EXPIRES_IN=7d
+      - ACCESS_TOKEN_SECRET=${ACCESS_TOKEN_SECRET}
+      - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
+      - AUTH_SECRET=${AUTH_SECRET}
+      - CORS_ORIGIN=https://cybersecurity.neiu.edu,http://localhost:8081,http://localhost:8082,http://localhost:3001,http://localhost,http://backend-1:3000,http://backend-2:3000,http://backend-3:3000,http://cybersecurity.neiu.edu
+    env_file:
+      - ../backend/.env
+    restart: unless-stopped
+    depends_on:
+      - model-1
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: 10G
+    networks:
+      - backend
+      - ml
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "10"
+
+  backend-2:
+    image: ${DOCKER_USERNAME}/backend:latest-prod
+    container_name: backend-2
+    ports:
+      - "3002:3000"
+    environment:
+      - NODE_ENV=production
+      - ML_ROOT_URL=http://model-2:5051
+      - WORKERS=4
+      - TRUST_PROXY=1
+      - ACCESS_TOKEN_EXPIRES_IN=1d
+      - REFRESH_TOKEN_EXPIRES_IN=7d
+      - ACCESS_TOKEN_SECRET=${ACCESS_TOKEN_SECRET}
+      - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
+      - AUTH_SECRET=${AUTH_SECRET}
+      - CORS_ORIGIN=https://cybersecurity.neiu.edu,http://localhost:8081,http://localhost:8082,http://localhost:3002,http://localhost,http://backend-1:3000,http://backend-2:3000,http://backend-3:3000,http://cybersecurity.neiu.edu
+    env_file:
+      - ../backend/.env
+    restart: unless-stopped
+    depends_on:
+      - model-2
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: 10G
+    networks:
+      - backend
+      - ml
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "10"
+
+  backend-3:
+    image: ${DOCKER_USERNAME}/backend:latest-prod
+    container_name: backend-3
+    ports:
+      - "3003:3000"
+    environment:
+      - NODE_ENV=production
+      - ML_ROOT_URL=http://model-3:5051
+      - WORKERS=4
+      - TRUST_PROXY=1
+      - ACCESS_TOKEN_EXPIRES_IN=1d
+      - REFRESH_TOKEN_EXPIRES_IN=7d
+      - ACCESS_TOKEN_SECRET=${ACCESS_TOKEN_SECRET}
+      - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
+      - AUTH_SECRET=${AUTH_SECRET}
+      - CORS_ORIGIN=https://cybersecurity.neiu.edu,http://localhost:8081,http://localhost:8082,http://localhost:3003,http://localhost,http://backend-1:3000,http://backend-2:3000,http://backend-3:3000,http://cybersecurity.neiu.edu
+    env_file:
+      - ../backend/.env
+    restart: unless-stopped
+    depends_on:
+      - model-3
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: 10G
+    networks:
+      - backend
+      - ml
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "10"
+
+  # Model instances
+  model-1:
+    image: ${DOCKER_USERNAME}/model:latest-prod
+    container_name: model-1
+    ports:
+      - "5051:5051"
+    environment:
+      - MODELENV=production
+      - FLASK_HOST=0.0.0.0
+      - FLASK_PORT=5051
+      - EXPRESS_URL=http://backend-1:3000
+      - FLASK_DEBUG=False
+    env_file:
+      - ../model/.env
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: 4G
+    volumes:
+      - models:/app/models:Z # Z flag for SELinux
+      - models/data:/app/infra/model/models:Z # Z flag for SELinux
+    networks:
+      - ml
+      - backend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "10"
+
+  model-2:
+    image: ${DOCKER_USERNAME}/model:latest-prod
+    container_name: model-2
+    ports:
+      - "5052:5051"
+    environment:
+      - MODELENV=production
+      - FLASK_HOST=0.0.0.0
+      - FLASK_PORT=5051
+      - EXPRESS_URL=http://backend-2:3000
+      - FLASK_DEBUG=False
+    env_file:
+      - ../model/.env
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: 4G
+    volumes:
+      - models:/app/models:Z
+      - models/data:/app/infra/model/models:Z # Z flag for SELinux
+    networks:
+      - ml
+      - backend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "10"
+
+  model-3:
+    image: ${DOCKER_USERNAME}/model:latest-prod
+    container_name: model-3
+    ports:
+      - "5053:5051"
+    environment:
+      - MODELENV=production
+      - FLASK_HOST=0.0.0.0
+      - FLASK_PORT=5051
+      - EXPRESS_URL=http://backend-3:3000
+      - FLASK_DEBUG=False
+    env_file:
+      - ../model/.env
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: 4G
+    volumes:
+      - models:/app/models:Z
+      - models/data:/app/infra/model/models:Z # Z flag for SELinux
+    networks:
+      - ml
+      - backend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "10"
+
+  # Monitoring services (commented out for future implementation)
+  # prometheus:
+  #   image: prom/prometheus
+  #   container_name: prometheus
+  #   ports:
+  #     - "9090:9090"
+  #   volumes:
+  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml:Z
+  #   restart: unless-stopped
+  #   networks:
+  #     - monitoring
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "200m"
+  #       max-file: "10"
+
+  # grafana:
+  #   image: grafana/grafana
+  #   container_name: grafana
+  #   ports:
+  #     - "9091:3000"  # Changed to avoid conflict with backend
+  #   volumes:
+  #     - grafana-data:/var/lib/grafana:Z
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - prometheus
+  #   networks:
+  #     - monitoring
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "200m"
+  #       max-file: "10"
+
+networks:
+  frontend:
+  backend:
+  ml:
+  # monitoring:
+
+volumes:
+  models:
+    driver: local
+  # grafana-data:
+  #   driver: local

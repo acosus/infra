@@ -1,0 +1,188 @@
+version: "3.8"
+
+# ========================================
+# PLATFORM COMPATIBILITY NOTES:
+# ----------------------------------------
+# For Mac M1/M2/M3 (ARM64) users:
+# - The 'platform: linux/amd64' setting enables compatibility with ARM-based Macs
+# - This forces Docker to use emulation since images are only available for AMD64
+#
+# For Windows/Linux (AMD64) users:
+# - You can optionally remove the 'platform: linux/amd64' lines if needed
+#
+# For all users:
+# - Keep the platform settings to avoid "no matching manifest" errors
+# - Some performance impact is expected on ARM machines due to emulation
+# - No source code is needed - this uses pre-built images from Docker Hub
+# ========================================
+
+services:
+  frontend:
+    container_name: dev-frontend
+    image: aiacosus/frontend:latest
+    platform: linux/amd64 # Comment this line if building images locally on ARM machines
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./ssl:/etc/nginx/ssl:ro # Mount SSL certificates for HTTPS
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://backend:3000
+    restart: unless-stopped
+    depends_on:
+      - backend
+      - model
+    networks:
+      - frontend
+      - backend
+      - ml
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "10"
+
+  backend:
+    container_name: dev-backend
+    image: aiacosus/backend:latest
+    platform: linux/amd64 # Comment this line if building images locally on ARM machines
+    expose:
+      - "3000"
+    environment:
+      - NODE_ENV=development
+      - ML_ROOT_URL=http://model:5051
+      - DB_SEED=true
+      - ACCESS_TOKEN_EXPIRES_IN=1d
+      - REFRESH_TOKEN_EXPIRES_IN=7d
+      - DEV_EMAIL=delivered@resend.dev
+      - MODEL_AVAILABLE=true
+      - USE_QUEUE=true
+      - PORT=3000
+      - AUTH_SECRET=current_secret
+      - CORS_ORIGIN=http://localhost:5173,http://localhost:4173,http://174.138.124.162/,http://localhost:3000,http://localhost,http://localhost:80,http://backend:3000,http://34.206.101.247,https://34.206.101.247
+      # - MONGODB_URI=mongodb+srv://dmandloi:1Hb1ZEJMNA7R53BQ@acosus.xcbu4ii.mongodb.net
+      - MONGODB_URI=mongodb://admin:password@mongodb:27017
+      - MONGODB_URI_PARAMS=?authSource=admin
+      - ACCESS_TOKEN_SECRET=access_token_secret
+      - REFRESH_TOKEN_SECRET=refresh_token_secret
+      - RESEND_API_KEY=dummy
+    restart: unless-stopped
+    depends_on:
+      # - mongodb
+      - model
+    networks:
+      - backend
+      - ml
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "10"
+
+  model:
+    container_name: dev-model
+    image: aiacosus/model:latest
+    platform: linux/amd64 # Comment this line if building images locally on ARM machines
+    expose:
+      - "5051"
+    environment:
+      - MODELENV=development
+      - FLASK_HOST=0.0.0.0
+      - FLASK_PORT=5051
+      - EXPRESS_URL=http://backend:3000
+      - USE_HARDCODED_DATA=False
+      - FLASK_DEBUG=True
+      - OPENAI_API_KEY=some_key
+      - EXPRESS_ML_URL=/api/v1/ml
+    restart: unless-stopped
+    volumes:
+      - models:/app/models
+    networks:
+      - ml
+      - backend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200m"
+        max-file: "10"
+
+  # mongodb:
+  #   container_name: dev-mongodb
+  #   image: bitnami/mongodb:latest
+  # image: arm64v8/mongo:latest # Use ARM64 image for compatibility with ARM-based Macs
+  # image: amd64/mongo:latest # Use AMD64 image for compatibility with ARM-based Macs
+  # image: winamd64/mongo:latest # Use AMD64 image for compatibility with ARM-based Macs
+  # platform: linux/amd64 # Comment this line if building images locally on ARM machines
+  # ports:
+  #   - "27017:27017"
+  # volumes:
+  #   - mongodb_data:/data/db
+  # networks:
+  #   - backend
+  # restart: unless-stopped
+  # logging:
+  #   driver: "json-file"
+  #   options:
+  #     max-size: "200m"
+  #     max-file: "10"
+  # mongodb:
+  #   container_name: dev-mongodb
+  #   image: mongo
+  #   platform: linux/arm64 # Comment this line if building images locally on ARM machines
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: admin
+  #     MONGO_INITDB_ROOT_PASSWORD: password
+  #     MONGO_INITDB_DATABASE: acosus-seed
+  #   ports:
+  #     - "27017:27017"
+  #   volumes:
+  #     - mongodb_data:/data/db
+  #   networks:
+  #     - backend
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: echo 'db.runCommand("ping").ok' | mongosh mongodb:27017/acosus --quiet
+  #     interval: 10s
+  #     timeout: 10s
+  #     retries: 5
+  #     start_period: 30s
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "200m"
+  #       max-file: "10"
+  # mongo-express:
+  #   container_name: dev-mongo-express
+  #   image: mongo-express:latest
+  #   platform: linux/amd64 # Comment this line if building images locally on ARM machines
+  #   environment:
+  #     ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+  #     ME_CONFIG_MONGODB_ADMINPASSWORD: password
+  #     ME_CONFIG_MONGODB_SERVER: mongodb
+  #     ME_CONFIG_MONGODB_PORT: 27017
+  #     ME_CONFIG_BASICAUTH_USERNAME: dev
+  #     ME_CONFIG_BASICAUTH_PASSWORD: dev
+  #   ports:
+  #     - "8081:8081"
+  #   networks:
+  #     - backend
+  #   depends_on:
+  #     - mongodb
+  #   restart: unless-stopped
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "200m"
+  #       max-file: "10"
+
+networks:
+  frontend:
+  backend:
+  ml:
+
+volumes:
+  models:
+    driver: local
+  # mongodb_data:
+  #   driver: local
