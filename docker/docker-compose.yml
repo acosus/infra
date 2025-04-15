@@ -183,8 +183,8 @@ services:
           cpus: "4"
           memory: 4G
     volumes:
-      - models:/app/models:Z # Z flag for SELinux
-      - models/data:/app/infra/model/models:Z # Z flag for SELinux
+      - model_storage:/app/models:Z # Z flag for SELinux
+      # - models/data:/app/infra/model/models:Z # Z flag for SELinux
     networks:
       - ml
       - backend
@@ -214,8 +214,8 @@ services:
           cpus: "4"
           memory: 4G
     volumes:
-      - models:/app/models:Z
-      - models/data:/app/infra/model/models:Z # Z flag for SELinux
+      - model_storage:/app/models:Z
+      # - models/data:/app/infra/model/models:Z # Z flag for SELinux
     networks:
       - ml
       - backend
@@ -245,8 +245,8 @@ services:
           cpus: "4"
           memory: 4G
     volumes:
-      - models:/app/models:Z
-      - models/data:/app/infra/model/models:Z # Z flag for SELinux
+      - model_storage:/app/models:Z
+      # - models/data:/app/infra/model/models:Z # Z flag for SELinux
     networks:
       - ml
       - backend
@@ -298,7 +298,7 @@ networks:
   # monitoring:
 
 volumes:
-  models:
+  model_storage:
     driver: local
   # grafana-data:
   #   driver: local
