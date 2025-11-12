@@ -1,93 +1,247 @@
+# Development Docker Compose
+# Location: infra/docker/docker-compose.dev.yml
+# This file is copied to project root during setup
+#
+# Usage:
+#   make up      - Start all services
+#   make down    - Stop all services
+#   make clean   - Stop and remove volumes (fresh DB)
+#   make logs    - View logs
+
 version: "3.8"
+
 services:
-  frontend:
-    build:
-      context: ../../frontend
-      dockerfile: Dockerfile.dev
+  # ============================================================
+  # MongoDB - Local Database
+  # ============================================================
+  mongodb:
+    image: mongo:7.0
+    container_name: acosus-mongodb-dev
     ports:
-      - "5173:5173"
+      - "27017:27017"
     environment:
-      - NODE_ENV=development
-      - VITE_API_URL=http://backend:3000
-    restart: unless-stopped
-    depends_on:
-      - backend
-      - model
-    networks:
-      - frontend
-      - backend
-      - ml
+      - MONGO_INITDB_DATABASE=acosus_dev
+      # No auth for dev (easier)
     volumes:
-      # - ../ssl:/etc/ssl:ro
-      # For hot reloading during development (optional)
-      - ../../frontend:/app
-      # This is to avoid mounting node_modules in the frontend container
-      - /app/node_modules
-      # This makes sure that the container uses the .env file that was set up in the Dockerfile.dev
+      - mongodb-data:/data/db
+    networks:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     logging:
       driver: "json-file"
       options:
-        max-size: "200m"
-        max-file: "10"
+        max-size: "10m"
+        max-file: "3"
 
+  # ============================================================
+  # Mongo Express - Database UI
+  # ============================================================
+  mongo-express:
+    image: mongo-express:latest
+    container_name: acosus-mongo-express-dev
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_URL=mongodb://mongodb:27017/
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=admin123
+      - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ============================================================
+  # Backend - Express.js API
+  # ============================================================
   backend:
     build:
       context: ../../backend
       dockerfile: Dockerfile.dev
-    expose:
-      - "3000"
+    container_name: acosus-backend-dev
+    ports:
+      - "3000:3000"  # Expose to host for direct access
     environment:
       - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongodb:27017/acosus_dev
       - ML_ROOT_URL=http://model:5051
+      - WORKERS=1  # Single worker for dev (easier debugging)
+      - TRUST_PROXY=1
     env_file:
-      - ../../backend/.env
-    restart: unless-stopped
+      - ../../backend/.env.dev
+    volumes:
+      # Mount source code for hot reload
+      - ../../backend:/app
+      # Preserve node_modules (don't overwrite with host)
+      - /app/node_modules
+      # Preserve dist folder
+      - /app/dist
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      model:
+        condition: service_started
     networks:
       - backend
       - ml
-    volumes:
-      # For hot reloading during development (optional)
-      - ../../backend/src:/app/src
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     logging:
       driver: "json-file"
       options:
-        max-size: "200m"
-        max-file: "10"
+        max-size: "10m"
+        max-file: "3"
 
+  # ============================================================
+  # Frontend - React + Vite
+  # ============================================================
+  frontend:
+    build:
+      context: ../../frontend
+      dockerfile: Dockerfile.dev
+    container_name: acosus-frontend-dev
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:3000  # Frontend calls backend via host
+    env_file:
+      - ../../frontend/.env.dev
+    volumes:
+      # Mount source code for hot reload
+      - ../../frontend:/app
+      # Preserve node_modules
+      - /app/node_modules
+      # Preserve dist
+      - /app/dist
+    depends_on:
+      - backend
+    networks:
+      - frontend
+      - backend
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ============================================================
+  # Model - Python ML Service
+  # ============================================================
   model:
     build:
       context: ../../model
       dockerfile: Dockerfile.dev
-    expose:
-      - "5051"
+    container_name: acosus-model-dev
+    ports:
+      - "5051:5051"  # Expose to host for direct access
     environment:
       - MODELENV=development
       - FLASK_HOST=0.0.0.0
       - FLASK_PORT=5051
       - EXPRESS_URL=http://backend:3000
-      - USE_HARDCODED_DATA=False
       - FLASK_DEBUG=True
+      - USE_HARDCODED_DATA=False
     env_file:
-      - ../../model/.env
-    restart: unless-stopped
+      - ../../model/.env.dev
     volumes:
-      - models:/app/models
-      # For hot reloading during development (optional)
+      # Mount source code for hot reload
       - ../../model:/app
+      # Preserve Python packages (speeds up restarts)
+      - model-packages:/usr/local/lib/python3.12/site-packages
+      # Mount models directory for persistence
+      - models:/app/models
     networks:
       - ml
       - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5051/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     logging:
       driver: "json-file"
       options:
-        max-size: "200m"
-        max-file: "10"
+        max-size: "10m"
+        max-file: "3"
 
+  # ============================================================
+  # PostHog - Analytics (OPTIONAL - Uncomment to enable)
+  # ============================================================
+  # posthog:
+  #   image: posthog/posthog:latest
+  #   container_name: acosus-posthog-dev
+  #   ports:
+  #     - "8000:8000"
+  #   environment:
+  #     - SECRET_KEY=dev-posthog-secret-change-me
+  #     - SITE_URL=http://localhost:3000/api/services/posthog
+  #     - DISABLE_SECURE_SSL_REDIRECT=true
+  #     - IS_BEHIND_PROXY=true
+  #     - TRUST_ALL_PROXIES=true
+  #   volumes:
+  #     - posthog-data:/var/lib/postgresql/data
+  #   networks:
+  #     - backend
+  #   restart: unless-stopped
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "10m"
+  #       max-file: "3"
+
+# ============================================================
+# Networks
+# ============================================================
 networks:
   frontend:
+    name: acosus-dev-frontend
   backend:
+    name: acosus-dev-backend
   ml:
+    name: acosus-dev-ml
 
+# ============================================================
+# Volumes
+# ============================================================
 volumes:
+  # MongoDB data (persists between restarts)
+  mongodb-data:
+    driver: local
+    name: acosus-mongodb-dev-data
+
+  # Model Python packages (speeds up container restarts)
+  model-packages:
+    driver: local
+    name: acosus-model-dev-packages
+
+  # Model files (ML models, training data)
   models:
     driver: local
+    name: acosus-model-dev-files
+
+  # PostHog data (uncomment if using PostHog)
+  # posthog-data:
+  #   driver: local
+  #   name: acosus-posthog-dev-data
