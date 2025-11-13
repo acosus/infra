@@ -72,7 +72,7 @@ services:
       - ACCESS_TOKEN_SECRET=${ACCESS_TOKEN_SECRET}
       - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
       - AUTH_SECRET=${AUTH_SECRET}
-      - CORS_ORIGIN=https://cybersecurity.neiu.edu,http://localhost:8081,http://localhost:8082,http://localhost:3001,http://localhost,http://backend-1:3000,http://backend-2:3000,http://backend-3:3000,http://cybersecurity.neiu.edu,https://acosus.neiu.edu,https://acosus.neiu.edu
+      - CORS_ORIGIN=https://cybersecurity.neiu.edu,http://localhost:8081,http://localhost:8082,http://localhost:3001,http://localhost,http://backend-1:3000,http://backend-2:3000,http://backend-3:3000,http://cybersecurity.neiu.edu
     env_file:
       - ../backend/.env
     restart: unless-stopped
