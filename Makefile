@@ -181,22 +181,52 @@ config-env:
 	@echo "$(COLOR_BOLD)$(COLOR_BLUE)Setting up environment files...$(COLOR_RESET)"
 	@# Backend
 	@if [ ! -f backend/.env.dev ]; then \
-		echo "$(COLOR_CYAN)→ Creating backend/.env.dev...$(COLOR_RESET)"; \
-		cp backend/.env.dev.example backend/.env.dev; \
+		if [ -f backend/.env.dev.example ]; then \
+			echo "$(COLOR_CYAN)→ Creating backend/.env.dev from example...$(COLOR_RESET)"; \
+			cp backend/.env.dev.example backend/.env.dev; \
+		else \
+			echo "$(COLOR_YELLOW)⚠ .env.dev.example not found, creating minimal .env.dev...$(COLOR_RESET)"; \
+			echo "# Backend Development Environment" > backend/.env.dev; \
+			echo "MONGODB_URI=mongodb://mongodb:27017/acosus_dev" >> backend/.env.dev; \
+			echo "ML_ROOT_URL=http://model:5051" >> backend/.env.dev; \
+			echo "ACCESS_TOKEN_SECRET=dev-secret-change-me" >> backend/.env.dev; \
+			echo "REFRESH_TOKEN_SECRET=dev-refresh-secret-change-me" >> backend/.env.dev; \
+			echo "AUTH_SECRET=dev-auth-secret-change-me" >> backend/.env.dev; \
+			echo "CORS_ORIGIN=http://localhost:5173,http://localhost:3000" >> backend/.env.dev; \
+			echo "NODE_ENV=development" >> backend/.env.dev; \
+			echo "WORKERS=1" >> backend/.env.dev; \
+		fi; \
 	else \
 		echo "$(COLOR_YELLOW)⊙ backend/.env.dev already exists$(COLOR_RESET)"; \
 	fi
 	@# Frontend
 	@if [ ! -f frontend/.env.dev ]; then \
-		echo "$(COLOR_CYAN)→ Creating frontend/.env.dev...$(COLOR_RESET)"; \
-		cp frontend/.env.dev.example frontend/.env.dev; \
+		if [ -f frontend/.env.dev.example ]; then \
+			echo "$(COLOR_CYAN)→ Creating frontend/.env.dev from example...$(COLOR_RESET)"; \
+			cp frontend/.env.dev.example frontend/.env.dev; \
+		else \
+			echo "$(COLOR_YELLOW)⚠ .env.dev.example not found, creating minimal .env.dev...$(COLOR_RESET)"; \
+			echo "# Frontend Development Environment" > frontend/.env.dev; \
+			echo "VITE_API_URL=http://localhost:3000" >> frontend/.env.dev; \
+			echo "MODE=development" >> frontend/.env.dev; \
+		fi; \
 	else \
 		echo "$(COLOR_YELLOW)⊙ frontend/.env.dev already exists$(COLOR_RESET)"; \
 	fi
 	@# Model
 	@if [ ! -f model/.env.dev ]; then \
-		echo "$(COLOR_CYAN)→ Creating model/.env.dev...$(COLOR_RESET)"; \
-		cp model/.env.dev.example model/.env.dev; \
+		if [ -f model/.env.dev.example ]; then \
+			echo "$(COLOR_CYAN)→ Creating model/.env.dev from example...$(COLOR_RESET)"; \
+			cp model/.env.dev.example model/.env.dev; \
+		else \
+			echo "$(COLOR_YELLOW)⚠ .env.dev.example not found, creating minimal .env.dev...$(COLOR_RESET)"; \
+			echo "# Model Development Environment" > model/.env.dev; \
+			echo "MODELENV=development" >> model/.env.dev; \
+			echo "FLASK_HOST=0.0.0.0" >> model/.env.dev; \
+			echo "FLASK_PORT=5051" >> model/.env.dev; \
+			echo "EXPRESS_URL=http://backend:3000" >> model/.env.dev; \
+			echo "FLASK_DEBUG=True" >> model/.env.dev; \
+		fi; \
 	else \
 		echo "$(COLOR_YELLOW)⊙ model/.env.dev already exists$(COLOR_RESET)"; \
 	fi
