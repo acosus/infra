@@ -234,8 +234,9 @@ config-env:
 config-docker:
 	@echo "$(COLOR_BOLD)$(COLOR_BLUE)Setting up Docker Compose...$(COLOR_RESET)"
 	@if [ ! -f $(COMPOSE_FILE) ]; then \
-		echo "$(COLOR_CYAN)→ Copying docker-compose.dev.yml...$(COLOR_RESET)"; \
-		cp infra/docker/docker-compose.dev.yml $(COMPOSE_FILE); \
+		echo "$(COLOR_CYAN)→ Copying and fixing docker-compose.dev.yml paths...$(COLOR_RESET)"; \
+		sed 's|../../backend|./backend|g; s|../../frontend|./frontend|g; s|../../model|./model|g' \
+			infra/docker/docker-compose.dev.yml > $(COMPOSE_FILE); \
 	else \
 		echo "$(COLOR_YELLOW)⊙ docker-compose.dev.yml already exists$(COLOR_RESET)"; \
 	fi
