@@ -20,7 +20,7 @@
 #   make seed    - Seed the database
 #   make help    - Show this help message
 
-.PHONY: help setup clone install config up down restart clean logs status seed rebuild
+.PHONY: help setup clone install config up down restart clean nuke logs status seed rebuild
 
 # ============================================================
 # Configuration Variables
@@ -77,6 +77,7 @@ help:
 	@echo "  $(COLOR_GREEN)make restart$(COLOR_RESET)    - Restart all services"
 	@echo "  $(COLOR_GREEN)make rebuild$(COLOR_RESET)    - Rebuild and restart containers"
 	@echo "  $(COLOR_GREEN)make clean$(COLOR_RESET)      - Stop and remove volumes (fresh DB)"
+	@echo "  $(COLOR_GREEN)make nuke$(COLOR_RESET)       - ☢️  Nuclear option: wipe EVERYTHING"
 	@echo ""
 	@echo "$(COLOR_BOLD)Utility Commands:$(COLOR_RESET)"
 	@echo "  $(COLOR_GREEN)make logs$(COLOR_RESET)       - View logs (all services)"
@@ -287,6 +288,48 @@ clean:
 		echo "$(COLOR_GREEN)✓ Clean complete (all data removed)$(COLOR_RESET)"; \
 	else \
 		echo "$(COLOR_YELLOW)Cancelled$(COLOR_RESET)"; \
+	fi
+
+nuke:
+	@echo "$(COLOR_BOLD)$(COLOR_YELLOW)☢️  NUCLEAR OPTION ☢️$(COLOR_RESET)"
+	@echo "This will completely wipe:"
+	@echo "  - All containers (running and stopped)"
+	@echo "  - All images (acosus-*)"
+	@echo "  - All volumes (acosus-*)"
+	@echo "  - All networks (acosus-*)"
+	@echo "  - Build cache"
+	@echo ""
+	@echo "$(COLOR_BOLD)$(COLOR_YELLOW)⚠️  You will need to rebuild everything from scratch!$(COLOR_RESET)"
+	@echo ""
+	@read -p "Are you ABSOLUTELY sure? [y/N] " -n 1 -r; \
+	echo; \
+	if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
+		echo "$(COLOR_BOLD)$(COLOR_BLUE)Nuking everything...$(COLOR_RESET)"; \
+		echo ""; \
+		echo "$(COLOR_CYAN)→ Stopping and removing containers...$(COLOR_RESET)"; \
+		docker-compose -f $(COMPOSE_FILE) down -v --remove-orphans 2>/dev/null || true; \
+		echo "$(COLOR_CYAN)→ Removing containers...$(COLOR_RESET)"; \
+		docker ps -a --filter "name=acosus" --format "{{.ID}}" | xargs -r docker rm -f 2>/dev/null || true; \
+		echo "$(COLOR_CYAN)→ Removing images...$(COLOR_RESET)"; \
+		docker images --filter "reference=acosus/*" --format "{{.ID}}" | xargs -r docker rmi -f 2>/dev/null || true; \
+		docker images --filter "reference=*/acosus*" --format "{{.ID}}" | xargs -r docker rmi -f 2>/dev/null || true; \
+		echo "$(COLOR_CYAN)→ Removing volumes...$(COLOR_RESET)"; \
+		docker volume ls --filter "name=acosus" --format "{{.Name}}" | xargs -r docker volume rm -f 2>/dev/null || true; \
+		echo "$(COLOR_CYAN)→ Removing networks...$(COLOR_RESET)"; \
+		docker network ls --filter "name=acosus" --format "{{.ID}}" | xargs -r docker network rm 2>/dev/null || true; \
+		echo "$(COLOR_CYAN)→ Pruning build cache...$(COLOR_RESET)"; \
+		docker builder prune -af 2>/dev/null || true; \
+		echo "$(COLOR_CYAN)→ Pruning system...$(COLOR_RESET)"; \
+		docker system prune -af --volumes 2>/dev/null || true; \
+		echo ""; \
+		echo "$(COLOR_BOLD)$(COLOR_GREEN)☢️  Nuclear cleanup complete!$(COLOR_RESET)"; \
+		echo ""; \
+		echo "$(COLOR_BOLD)Next steps:$(COLOR_RESET)"; \
+		echo "  1. $(COLOR_CYAN)make up$(COLOR_RESET)     # Rebuild and start"; \
+		echo "  2. $(COLOR_CYAN)make seed$(COLOR_RESET)   # Seed database"; \
+		echo ""; \
+	else \
+		echo "$(COLOR_YELLOW)Cancelled - wise choice!$(COLOR_RESET)"; \
 	fi
 
 # ============================================================
