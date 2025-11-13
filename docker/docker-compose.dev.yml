@@ -73,12 +73,12 @@ services:
       dockerfile: Dockerfile.dev
     container_name: acosus-backend-dev
     ports:
-      - "3000:3000"  # Expose to host for direct access
+      - "3000:3000" # Expose to host for direct access
     environment:
       - NODE_ENV=development
       - MONGODB_URI=mongodb://mongodb:27017/acosus_dev
       - ML_ROOT_URL=http://model:5051
-      - WORKERS=1  # Single worker for dev (easier debugging)
+      - WORKERS=1 # Single worker for dev (easier debugging)
       - TRUST_PROXY=1
     env_file:
       - ../../backend/.env.dev
@@ -99,7 +99,15 @@ services:
       - ml
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/v1/health"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:3000/api/v1/health",
+        ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -122,7 +130,7 @@ services:
       - "5173:5173"
     environment:
       - NODE_ENV=development
-      - VITE_API_URL=http://localhost:3000  # Frontend calls backend via host
+      - VITE_API_URL=http://localhost:3000 # Frontend calls backend via host
     env_file:
       - ../../frontend/.env.dev
     volumes:
@@ -153,7 +161,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: acosus-model-dev
     ports:
-      - "5051:5051"  # Expose to host for direct access
+      - "5051:5051" # Expose to host for direct access
     environment:
       - MODELENV=development
       - FLASK_HOST=0.0.0.0
@@ -187,24 +195,115 @@ services:
         max-file: "3"
 
   # ============================================================
-  # PostHog - Analytics (OPTIONAL - Uncomment to enable)
+  # PostHog Stack - Analytics & Monitoring
   # ============================================================
-  # posthog:
-  #   image: posthog/posthog:latest
-  #   container_name: acosus-posthog-dev
-  #   ports:
-  #     - "8000:8000"
+
+  # PostgreSQL for PostHog metadata
+  # postgres-posthog:
+  #   image: postgres:15-alpine
+  #   container_name: acosus-postgres-posthog-dev
   #   environment:
-  #     - SECRET_KEY=dev-posthog-secret-change-me
-  #     - SITE_URL=http://localhost:3000/api/services/posthog
-  #     - DISABLE_SECURE_SSL_REDIRECT=true
-  #     - IS_BEHIND_PROXY=true
-  #     - TRUST_ALL_PROXIES=true
+  #     - POSTGRES_USER=posthog
+  #     - POSTGRES_PASSWORD=posthog_dev_password
+  #     - POSTGRES_DB=posthog
   #   volumes:
-  #     - posthog-data:/var/lib/postgresql/data
+  #     - postgres-posthog-data:/var/lib/postgresql/data
   #   networks:
   #     - backend
   #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U posthog"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "10m"
+  #       max-file: "3"
+
+  # ClickHouse for PostHog event storage
+  # clickhouse-posthog:
+  #   image: clickhouse/clickhouse-server:23.11-alpine
+  #   container_name: acosus-clickhouse-posthog-dev
+  #   environment:
+  #     - CLICKHOUSE_DB=posthog
+  #     - CLICKHOUSE_USER=posthog
+  #     - CLICKHOUSE_PASSWORD=posthog_dev_password
+  #   volumes:
+  #     - clickhouse-posthog-data:/var/lib/clickhouse
+  #   networks:
+  #     - backend
+  #   restart: unless-stopped
+  #   ulimits:
+  #     nofile:
+  #       soft: 262144
+  #       hard: 262144
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "10m"
+  #       max-file: "3"
+
+  # Redis for PostHog caching
+  # redis-posthog:
+  #   image: redis:7-alpine
+  #   container_name: acosus-redis-posthog-dev
+  #   networks:
+  #     - backend
+  #   restart: unless-stopped
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "10m"
+  #       max-file: "3"
+
+  # PostHog main application
+  # posthog:
+  #   image: posthog/posthog:latest-release
+  #   container_name: acosus-posthog-dev
+  #   ports:
+  #     - "8000:8000"  # Exposed for direct access in dev
+  #   environment:
+  #     # Database connections
+  #     - DATABASE_URL=postgres://posthog:posthog_dev_password@postgres-posthog:5432/posthog
+  #     - CLICKHOUSE_HOST=clickhouse-posthog
+  #     - CLICKHOUSE_DATABASE=posthog
+  #     - CLICKHOUSE_USER=posthog
+  #     - CLICKHOUSE_PASSWORD=posthog_dev_password
+  #     - CLICKHOUSE_SECURE=false
+  #     - CLICKHOUSE_VERIFY=false
+  #     - CLICKHOUSE_REPLICATION=false
+  #     - REDIS_URL=redis://redis-posthog:6379/
+  #     # PostHog configuration
+  #     - SECRET_KEY=dev-posthog-secret-key-change-me-in-production
+  #     - SITE_URL=http://localhost:3000/api/services/posthog
+  #     # Proxy configuration (behind Express)
+  #     - DISABLE_SECURE_SSL_REDIRECT=true
+  #     - IS_BEHIND_PROXY=true
+  #     - TRUST_ALL_PROXIES=true
+  #     # Development settings
+  #     - DEBUG=true
+  #     - WEB_CONCURRENCY=1
+  #     - WORKER_CONCURRENCY=1
+  #   volumes:
+  #     - posthog-dev-data:/data
+  #   depends_on:
+  #     postgres-posthog:
+  #       condition: service_healthy
+  #     clickhouse-posthog:
+  #       condition: service_started
+  #     redis-posthog:
+  #       condition: service_started
+  #   networks:
+  #     - backend
+  #   restart: unless-stopped
+  #   healthcheck:
+  #     test: ["CMD", "wget", "-q", "--spider", "http://localhost:8000/_health"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 60s
   #   logging:
   #     driver: "json-file"
   #     options:
@@ -241,7 +340,15 @@ volumes:
     driver: local
     name: acosus-model-dev-files
 
-  # PostHog data (uncomment if using PostHog)
-  # posthog-data:
+  # PostHog volumes
+  # postgres-posthog-data:
+  #   driver: local
+  #   name: acosus-postgres-posthog-dev-data
+
+  # clickhouse-posthog-data:
+  #   driver: local
+  #   name: acosus-clickhouse-posthog-dev-data
+
+  # posthog-dev-data:
   #   driver: local
   #   name: acosus-posthog-dev-data

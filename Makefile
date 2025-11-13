@@ -91,14 +91,14 @@ help:
 	@echo "  $(COLOR_GREEN)make shell-frontend$(COLOR_RESET) - Open shell in frontend container"
 	@echo "  $(COLOR_GREEN)make shell-model$(COLOR_RESET) - Open shell in model container"
 	@echo ""
-	@echo "$(COLOR_BOLD)PostHog Commands:$(COLOR_RESET)"
-	@echo "  $(COLOR_GREEN)make posthog-status$(COLOR_RESET) - Check PostHog services"
-	@echo "  $(COLOR_GREEN)make posthog-start$(COLOR_RESET) - Start PostHog services"
-	@echo "  $(COLOR_GREEN)make posthog-stop$(COLOR_RESET) - Stop PostHog services"
-	@echo "  $(COLOR_GREEN)make posthog-restart$(COLOR_RESET) - Restart PostHog services"
-	@echo "  $(COLOR_GREEN)make posthog-clean$(COLOR_RESET) - Remove PostHog data"
-	@echo "  $(COLOR_GREEN)make logs-posthog$(COLOR_RESET) - View PostHog logs"
-	@echo ""
+# 	@echo "$(COLOR_BOLD)PostHog Commands:$(COLOR_RESET)"
+# 	@echo "  $(COLOR_GREEN)make posthog-status$(COLOR_RESET) - Check PostHog services"
+# 	@echo "  $(COLOR_GREEN)make posthog-start$(COLOR_RESET) - Start PostHog services"
+# 	@echo "  $(COLOR_GREEN)make posthog-stop$(COLOR_RESET) - Stop PostHog services"
+# 	@echo "  $(COLOR_GREEN)make posthog-restart$(COLOR_RESET) - Restart PostHog services"
+# 	@echo "  $(COLOR_GREEN)make posthog-clean$(COLOR_RESET) - Remove PostHog data"
+# 	@echo "  $(COLOR_GREEN)make logs-posthog$(COLOR_RESET) - View PostHog logs"
+# 	@echo ""
 	@echo "$(COLOR_BOLD)Quick Start:$(COLOR_RESET)"
 	@echo "  1. $(COLOR_CYAN)make setup$(COLOR_RESET)  # First time only"
 	@echo "  2. $(COLOR_CYAN)make up$(COLOR_RESET)     # Start development"
@@ -265,7 +265,7 @@ up:
 	@echo "  Backend API:   $(COLOR_YELLOW)http://localhost:3000/api/v1/health$(COLOR_RESET)"
 	@echo "  Model API:     $(COLOR_YELLOW)http://localhost:5051/health$(COLOR_RESET)"
 	@echo "  Mongo Express: $(COLOR_YELLOW)http://localhost:8081$(COLOR_RESET) (admin/admin123)"
-	@echo "  PostHog:       $(COLOR_YELLOW)http://localhost:8000$(COLOR_RESET) (analytics)"
+# 	@echo "  PostHog:       $(COLOR_YELLOW)http://localhost:8000$(COLOR_RESET) (analytics)"
 	@echo ""
 	@echo "$(COLOR_BOLD)Commands:$(COLOR_RESET)"
 	@echo "  View logs:     $(COLOR_CYAN)make logs$(COLOR_RESET)"
@@ -361,14 +361,14 @@ logs-model:
 logs-mongodb:
 	@docker-compose -f $(COMPOSE_FILE) logs -f mongodb
 
-logs-posthog:
-	@docker-compose -f $(COMPOSE_FILE) logs -f posthog
+# logs-posthog:
+# 	@docker-compose -f $(COMPOSE_FILE) logs -f posthog
 
-logs-postgres-posthog:
-	@docker-compose -f $(COMPOSE_FILE) logs -f postgres-posthog
+# logs-postgres-posthog:
+# 	@docker-compose -f $(COMPOSE_FILE) logs -f postgres-posthog
 
-logs-clickhouse-posthog:
-	@docker-compose -f $(COMPOSE_FILE) logs -f clickhouse-posthog
+# logs-clickhouse-posthog:
+# 	@docker-compose -f $(COMPOSE_FILE) logs -f clickhouse-posthog
 
 # ============================================================
 # Status Commands
@@ -438,40 +438,40 @@ update: pull install
 # ============================================================
 # PostHog Commands
 # ============================================================
-posthog-status:
-	@echo "$(COLOR_BOLD)$(COLOR_BLUE)PostHog Services Status:$(COLOR_RESET)"
-	@docker-compose -f $(COMPOSE_FILE) ps postgres-posthog clickhouse-posthog redis-posthog posthog
+# posthog-status:
+# 	@echo "$(COLOR_BOLD)$(COLOR_BLUE)PostHog Services Status:$(COLOR_RESET)"
+# 	@docker-compose -f $(COMPOSE_FILE) ps postgres-posthog clickhouse-posthog redis-posthog posthog
 
-posthog-restart:
-	@echo "$(COLOR_BOLD)$(COLOR_BLUE)Restarting PostHog services...$(COLOR_RESET)"
-	@docker-compose -f $(COMPOSE_FILE) restart postgres-posthog clickhouse-posthog redis-posthog posthog
-	@echo "$(COLOR_GREEN)✓ PostHog services restarted$(COLOR_RESET)"
+# posthog-restart:
+# 	@echo "$(COLOR_BOLD)$(COLOR_BLUE)Restarting PostHog services...$(COLOR_RESET)"
+# 	@docker-compose -f $(COMPOSE_FILE) restart postgres-posthog clickhouse-posthog redis-posthog posthog
+# 	@echo "$(COLOR_GREEN)✓ PostHog services restarted$(COLOR_RESET)"
 
-posthog-stop:
-	@echo "$(COLOR_BOLD)$(COLOR_BLUE)Stopping PostHog services...$(COLOR_RESET)"
-	@docker-compose -f $(COMPOSE_FILE) stop postgres-posthog clickhouse-posthog redis-posthog posthog
-	@echo "$(COLOR_GREEN)✓ PostHog services stopped$(COLOR_RESET)"
+# posthog-stop:
+# 	@echo "$(COLOR_BOLD)$(COLOR_BLUE)Stopping PostHog services...$(COLOR_RESET)"
+# 	@docker-compose -f $(COMPOSE_FILE) stop postgres-posthog clickhouse-posthog redis-posthog posthog
+# 	@echo "$(COLOR_GREEN)✓ PostHog services stopped$(COLOR_RESET)"
 
-posthog-start:
-	@echo "$(COLOR_BOLD)$(COLOR_BLUE)Starting PostHog services...$(COLOR_RESET)"
-	@docker-compose -f $(COMPOSE_FILE) up -d postgres-posthog clickhouse-posthog redis-posthog posthog
-	@echo "$(COLOR_GREEN)✓ PostHog services started$(COLOR_RESET)"
-	@echo ""
-	@echo "$(COLOR_BOLD)Access PostHog:$(COLOR_RESET)"
-	@echo "  Direct:  $(COLOR_YELLOW)http://localhost:8000$(COLOR_RESET)"
-	@echo "  Proxy:   $(COLOR_YELLOW)http://localhost:3000/api/services/posthog$(COLOR_RESET)"
-	@echo ""
+# posthog-start:
+# 	@echo "$(COLOR_BOLD)$(COLOR_BLUE)Starting PostHog services...$(COLOR_RESET)"
+# 	@docker-compose -f $(COMPOSE_FILE) up -d postgres-posthog clickhouse-posthog redis-posthog posthog
+# 	@echo "$(COLOR_GREEN)✓ PostHog services started$(COLOR_RESET)"
+# 	@echo ""
+# 	@echo "$(COLOR_BOLD)Access PostHog:$(COLOR_RESET)"
+# 	@echo "  Direct:  $(COLOR_YELLOW)http://localhost:8000$(COLOR_RESET)"
+# 	@echo "  Proxy:   $(COLOR_YELLOW)http://localhost:3000/api/services/posthog$(COLOR_RESET)"
+# 	@echo ""
 
-posthog-clean:
-	@echo "$(COLOR_BOLD)$(COLOR_YELLOW)⚠️  This will delete all PostHog data$(COLOR_RESET)"
-	@read -p "Are you sure? [y/N] " -n 1 -r; \
-	echo; \
-	if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
-		echo "$(COLOR_BOLD)$(COLOR_BLUE)Stopping and removing PostHog volumes...$(COLOR_RESET)"; \
-		docker-compose -f $(COMPOSE_FILE) stop postgres-posthog clickhouse-posthog redis-posthog posthog; \
-		docker-compose -f $(COMPOSE_FILE) rm -f postgres-posthog clickhouse-posthog redis-posthog posthog; \
-		docker volume rm acosus-postgres-posthog-dev-data acosus-clickhouse-posthog-dev-data acosus-posthog-dev-data 2>/dev/null || true; \
-		echo "$(COLOR_GREEN)✓ PostHog data removed$(COLOR_RESET)"; \
-	else \
-		echo "$(COLOR_YELLOW)Cancelled$(COLOR_RESET)"; \
-	fi
+# posthog-clean:
+# 	@echo "$(COLOR_BOLD)$(COLOR_YELLOW)⚠️  This will delete all PostHog data$(COLOR_RESET)"
+# 	@read -p "Are you sure? [y/N] " -n 1 -r; \
+# 	echo; \
+# 	if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
+# 		echo "$(COLOR_BOLD)$(COLOR_BLUE)Stopping and removing PostHog volumes...$(COLOR_RESET)"; \
+# 		docker-compose -f $(COMPOSE_FILE) stop postgres-posthog clickhouse-posthog redis-posthog posthog; \
+# 		docker-compose -f $(COMPOSE_FILE) rm -f postgres-posthog clickhouse-posthog redis-posthog posthog; \
+# 		docker volume rm acosus-postgres-posthog-dev-data acosus-clickhouse-posthog-dev-data acosus-posthog-dev-data 2>/dev/null || true; \
+# 		echo "$(COLOR_GREEN)✓ PostHog data removed$(COLOR_RESET)"; \
+# 	else \
+# 		echo "$(COLOR_YELLOW)Cancelled$(COLOR_RESET)"; \
+# 	fi
