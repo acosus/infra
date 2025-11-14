@@ -3,7 +3,7 @@ version: "3.8"
 services:
   # Frontend instances
   frontend-1:
-    image: ${DOCKER_USERNAME}/frontend:latest-prod
+    image: ${DOCKER_USERNAME}/frontend:${TAG:-latest-prod}
     container_name: frontend-1
     env_file:
       - ../frontend/.env
@@ -30,7 +30,7 @@ services:
         max-file: "10"
 
   frontend-2:
-    image: ${DOCKER_USERNAME}/frontend:latest-prod
+    image: ${DOCKER_USERNAME}/frontend:${TAG:-latest-prod}
     container_name: frontend-2
     env_file:
       - ../frontend/.env
@@ -58,7 +58,7 @@ services:
 
   # Backend instances with worker clustering
   backend-1:
-    image: ${DOCKER_USERNAME}/backend:latest-prod
+    image: ${DOCKER_USERNAME}/backend:${TAG:-latest-prod}
     container_name: backend-1
     ports:
       - "3001:3000"
@@ -93,7 +93,7 @@ services:
         max-file: "10"
 
   backend-2:
-    image: ${DOCKER_USERNAME}/backend:latest-prod
+    image: ${DOCKER_USERNAME}/backend:${TAG:-latest-prod}
     container_name: backend-2
     ports:
       - "3002:3000"
@@ -128,7 +128,7 @@ services:
         max-file: "10"
 
   backend-3:
-    image: ${DOCKER_USERNAME}/backend:latest-prod
+    image: ${DOCKER_USERNAME}/backend:${TAG:-latest-prod}
     container_name: backend-3
     ports:
       - "3003:3000"
@@ -164,7 +164,7 @@ services:
 
   # Model instances
   model-1:
-    image: ${DOCKER_USERNAME}/model:latest-prod
+    image: ${DOCKER_USERNAME}/model:${TAG:-latest-prod}
     container_name: model-1
     ports:
       - "5051:5051"
@@ -195,7 +195,7 @@ services:
         max-file: "10"
 
   model-2:
-    image: ${DOCKER_USERNAME}/model:latest-prod
+    image: ${DOCKER_USERNAME}/model:${TAG:-latest-prod}
     container_name: model-2
     ports:
       - "5052:5051"
@@ -226,7 +226,7 @@ services:
         max-file: "10"
 
   model-3:
-    image: ${DOCKER_USERNAME}/model:latest-prod
+    image: ${DOCKER_USERNAME}/model:${TAG:-latest-prod}
     container_name: model-3
     ports:
       - "5053:5051"
