@@ -1,6 +1,28 @@
 # docker-compose.prod.yml
 version: "3.8"
 services:
+  # ============================================================
+  # Backend Init Container - Database Migrations
+  # ============================================================
+  # Runs ONCE before backend containers start to ensure database is initialized
+  # Uses distributed locking to prevent race conditions
+  # Exit code 0 = success, 1 = failure
+  backend-init:
+    image: ${DOCKER_USERNAME}/backend-init:${TAG:-latest-prod}
+    container_name: backend-init
+    env_file:
+      - ../backend/.env
+    environment:
+      - NODE_ENV=production
+    restart: "no" # Run once and exit
+    networks:
+      - backend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+
   # Frontend instances
   frontend-1:
     image: ${DOCKER_USERNAME}/frontend:${TAG:-latest-prod}
@@ -77,7 +99,10 @@ services:
       - ../backend/.env
     restart: unless-stopped
     depends_on:
-      - model-1
+      backend-init:
+        condition: service_completed_successfully
+      model-1:
+        # condition: service_started
     deploy:
       resources:
         limits:
@@ -112,7 +137,10 @@ services:
       - ../backend/.env
     restart: unless-stopped
     depends_on:
-      - model-2
+      backend-init:
+        condition: service_completed_successfully
+      model-2:
+        # condition: service_started
     deploy:
       resources:
         limits:
@@ -147,7 +175,10 @@ services:
       - ../backend/.env
     restart: unless-stopped
     depends_on:
-      - model-3
+      backend-init:
+        condition: service_completed_successfully
+      model-3:
+      #   condition: service_started
     deploy:
       resources:
         limits:

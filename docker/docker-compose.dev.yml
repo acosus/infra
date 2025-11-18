@@ -40,6 +40,35 @@ services:
         max-file: "3"
 
   # ============================================================
+  # Backend Init Container - Database Migrations
+  # ============================================================
+  # Runs ONCE before backend starts to ensure database is initialized
+  # Uses distributed locking to prevent race conditions
+  # Exit code 0 = success, 1 = failure
+  backend-init:
+    build:
+      context: ../../backend
+      dockerfile: Dockerfile.init.dev
+    container_name: acosus-backend-init-dev
+    environment:
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongodb:27017/acosus_dev
+      - DB_SEED=false
+    env_file:
+      - ../../backend/.env.dev
+    restart: "no" # Run once and exit
+    depends_on:
+      mongodb:
+        condition: service_healthy # Wait for MongoDB to be ready
+    networks:
+      - backend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ============================================================
   # Mongo Express - Database UI
   # ============================================================
   mongo-express:
@@ -80,6 +109,7 @@ services:
       - ML_ROOT_URL=http://model:5051
       - WORKERS=1 # Single worker for dev (easier debugging)
       - TRUST_PROXY=1
+      - DB_SEED=false
     env_file:
       - ../../backend/.env.dev
     volumes:
@@ -92,6 +122,8 @@ services:
     depends_on:
       mongodb:
         condition: service_healthy
+      backend-init:
+        condition: service_completed_successfully # Wait for init to complete
       model:
         condition: service_started
     networks:
