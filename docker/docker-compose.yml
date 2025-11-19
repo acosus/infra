@@ -101,8 +101,9 @@ services:
     depends_on:
       backend-init:
         condition: service_completed_successfully
-      model-1:
-        # condition: service_started
+      # model-1:
+      #   condition: service_started
+      # Note: Model dependency commented out - model not available
     deploy:
       resources:
         limits:
@@ -139,8 +140,9 @@ services:
     depends_on:
       backend-init:
         condition: service_completed_successfully
-      model-2:
-        # condition: service_started
+      # model-2:
+      #   condition: service_started
+      # Note: Model dependency commented out - model not available
     deploy:
       resources:
         limits:
@@ -177,8 +179,9 @@ services:
     depends_on:
       backend-init:
         condition: service_completed_successfully
-      model-3:
+      # model-3:
       #   condition: service_started
+      # Note: Model dependency commented out - model not available
     deploy:
       resources:
         limits:
