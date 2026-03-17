@@ -331,6 +331,3 @@ networks:
   ml:
   # monitoring:
 
-volumes:
-  # grafana-data:
-  #   driver: local
