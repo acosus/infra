@@ -48,13 +48,13 @@ COMPOSE_FILE := docker-compose.dev.yml
 # ============================================================
 # Colors for output
 # ============================================================
-COLOR_RESET := \e[0m
-COLOR_BOLD := \e[1m
-COLOR_GREEN := \e[32m
-COLOR_YELLOW := \e[33m
-COLOR_BLUE := \e[34m
-COLOR_CYAN := \e[36m
-COLOR_RED := \e[31m
+COLOR_RESET := \033[0m
+COLOR_BOLD := \033[1m
+COLOR_GREEN := \033[32m
+COLOR_YELLOW := \033[33m
+COLOR_BLUE := \033[34m
+COLOR_CYAN := \033[36m
+COLOR_RED := \033[31m
 
 # ============================================================
 # Default Target
@@ -65,92 +65,92 @@ COLOR_RED := \e[31m
 # Help
 # ============================================================
 help:
-	@echo -e "$(COLOR_BOLD)$(COLOR_CYAN)ACOSUS Development Environment$(COLOR_RESET)"
-	@echo -e ""
-	@echo -e "$(COLOR_BOLD)Setup Commands:$(COLOR_RESET)"
-	@echo -e "  $(COLOR_GREEN)make setup$(COLOR_RESET)      - Full setup (clone + install + config)"
-	@echo -e "  $(COLOR_GREEN)make clone$(COLOR_RESET)      - Clone all repositories"
-	@echo -e "  $(COLOR_GREEN)make install$(COLOR_RESET)    - Install dependencies"
-	@echo -e "  $(COLOR_GREEN)make config$(COLOR_RESET)     - Setup environment files"
-	@echo -e ""
-	@echo -e "$(COLOR_BOLD)Development Commands:$(COLOR_RESET)"
-	@echo -e "  $(COLOR_GREEN)make dev$(COLOR_RESET)        - 🚀 Full dev setup with init (recommended)"
-	@echo -e "  $(COLOR_GREEN)make up$(COLOR_RESET)         - Start all services"
-	@echo -e "  $(COLOR_GREEN)make down$(COLOR_RESET)       - Stop all services"
-	@echo -e "  $(COLOR_GREEN)make restart$(COLOR_RESET)    - Restart all services"
-	@echo -e "  $(COLOR_GREEN)make rebuild$(COLOR_RESET)    - Rebuild and restart containers"
-	@echo -e "  $(COLOR_GREEN)make clean$(COLOR_RESET)      - Stop and remove volumes (fresh DB)"
-	@echo -e "  $(COLOR_GREEN)make nuke$(COLOR_RESET)       - ☢️  Nuclear option: wipe EVERYTHING"
-	@echo -e ""
-	@echo -e "$(COLOR_BOLD)Init Container Commands:$(COLOR_RESET)"
-	@echo -e "  $(COLOR_GREEN)make dev-init-status$(COLOR_RESET) - Show init status and DB version"
-	@echo -e "  $(COLOR_GREEN)make dev-reinit$(COLOR_RESET) - Re-run database initialization"
-	@echo -e "  $(COLOR_GREEN)make dev-fresh$(COLOR_RESET) - Fresh start (clean + rebuild + init)"
-	@echo -e "  $(COLOR_GREEN)make logs-init$(COLOR_RESET) - View init container logs"
-	@echo -e ""
-	@echo -e "$(COLOR_BOLD)Utility Commands:$(COLOR_RESET)"
-	@echo -e "  $(COLOR_GREEN)make logs$(COLOR_RESET)       - View logs (all services)"
-	@echo -e "  $(COLOR_GREEN)make logs-backend$(COLOR_RESET) - View backend logs"
-	@echo -e "  $(COLOR_GREEN)make logs-frontend$(COLOR_RESET) - View frontend logs"
-	@echo -e "  $(COLOR_GREEN)make logs-model$(COLOR_RESET) - View model logs"
-	@echo -e "  $(COLOR_GREEN)make status$(COLOR_RESET)     - Show running containers"
-	@echo -e "  $(COLOR_GREEN)make seed$(COLOR_RESET)       - Seed database with test data"
-	@echo -e "  $(COLOR_GREEN)make shell-backend$(COLOR_RESET) - Open shell in backend container"
-	@echo -e "  $(COLOR_GREEN)make shell-frontend$(COLOR_RESET) - Open shell in frontend container"
-	@echo -e "  $(COLOR_GREEN)make shell-model$(COLOR_RESET) - Open shell in model container"
-	@echo -e ""
-# 	@echo -e "$(COLOR_BOLD)PostHog Commands:$(COLOR_RESET)"
-# 	@echo -e "  $(COLOR_GREEN)make posthog-status$(COLOR_RESET) - Check PostHog services"
-# 	@echo -e "  $(COLOR_GREEN)make posthog-start$(COLOR_RESET) - Start PostHog services"
-# 	@echo -e "  $(COLOR_GREEN)make posthog-stop$(COLOR_RESET) - Stop PostHog services"
-# 	@echo -e "  $(COLOR_GREEN)make posthog-restart$(COLOR_RESET) - Restart PostHog services"
-# 	@echo -e "  $(COLOR_GREEN)make posthog-clean$(COLOR_RESET) - Remove PostHog data"
-# 	@echo -e "  $(COLOR_GREEN)make logs-posthog$(COLOR_RESET) - View PostHog logs"
-# 	@echo -e ""
-	@echo -e "$(COLOR_BOLD)Quick Start:$(COLOR_RESET)"
-	@echo -e "  1. $(COLOR_CYAN)make setup$(COLOR_RESET)  # First time only"
-	@echo -e "  2. $(COLOR_CYAN)make up$(COLOR_RESET)     # Start development"
-	@echo -e "  3. Open: $(COLOR_YELLOW)http://localhost:5173$(COLOR_RESET)"
-	@echo -e ""
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_CYAN)ACOSUS Development Environment$(COLOR_RESET)"
+	@printf "\n"
+	@printf "%b\n""$(COLOR_BOLD)Setup Commands:$(COLOR_RESET)"
+	@printf "%b\n""  $(COLOR_GREEN)make setup$(COLOR_RESET)      - Full setup (clone + install + config)"
+	@printf "%b\n""  $(COLOR_GREEN)make clone$(COLOR_RESET)      - Clone all repositories"
+	@printf "%b\n""  $(COLOR_GREEN)make install$(COLOR_RESET)    - Install dependencies"
+	@printf "%b\n""  $(COLOR_GREEN)make config$(COLOR_RESET)     - Setup environment files"
+	@printf "\n"
+	@printf "%b\n""$(COLOR_BOLD)Development Commands:$(COLOR_RESET)"
+	@printf "%b\n""  $(COLOR_GREEN)make dev$(COLOR_RESET)        - 🚀 Full dev setup with init (recommended)"
+	@printf "%b\n""  $(COLOR_GREEN)make up$(COLOR_RESET)         - Start all services"
+	@printf "%b\n""  $(COLOR_GREEN)make down$(COLOR_RESET)       - Stop all services"
+	@printf "%b\n""  $(COLOR_GREEN)make restart$(COLOR_RESET)    - Restart all services"
+	@printf "%b\n""  $(COLOR_GREEN)make rebuild$(COLOR_RESET)    - Rebuild and restart containers"
+	@printf "%b\n""  $(COLOR_GREEN)make clean$(COLOR_RESET)      - Stop and remove volumes (fresh DB)"
+	@printf "%b\n""  $(COLOR_GREEN)make nuke$(COLOR_RESET)       - ☢️  Nuclear option: wipe EVERYTHING"
+	@printf "\n"
+	@printf "%b\n""$(COLOR_BOLD)Init Container Commands:$(COLOR_RESET)"
+	@printf "%b\n""  $(COLOR_GREEN)make dev-init-status$(COLOR_RESET) - Show init status and DB version"
+	@printf "%b\n""  $(COLOR_GREEN)make dev-reinit$(COLOR_RESET) - Re-run database initialization"
+	@printf "%b\n""  $(COLOR_GREEN)make dev-fresh$(COLOR_RESET) - Fresh start (clean + rebuild + init)"
+	@printf "%b\n""  $(COLOR_GREEN)make logs-init$(COLOR_RESET) - View init container logs"
+	@printf "\n"
+	@printf "%b\n""$(COLOR_BOLD)Utility Commands:$(COLOR_RESET)"
+	@printf "%b\n""  $(COLOR_GREEN)make logs$(COLOR_RESET)       - View logs (all services)"
+	@printf "%b\n""  $(COLOR_GREEN)make logs-backend$(COLOR_RESET) - View backend logs"
+	@printf "%b\n""  $(COLOR_GREEN)make logs-frontend$(COLOR_RESET) - View frontend logs"
+	@printf "%b\n""  $(COLOR_GREEN)make logs-model$(COLOR_RESET) - View model logs"
+	@printf "%b\n""  $(COLOR_GREEN)make status$(COLOR_RESET)     - Show running containers"
+	@printf "%b\n""  $(COLOR_GREEN)make seed$(COLOR_RESET)       - Seed database with test data"
+	@printf "%b\n""  $(COLOR_GREEN)make shell-backend$(COLOR_RESET) - Open shell in backend container"
+	@printf "%b\n""  $(COLOR_GREEN)make shell-frontend$(COLOR_RESET) - Open shell in frontend container"
+	@printf "%b\n""  $(COLOR_GREEN)make shell-model$(COLOR_RESET) - Open shell in model container"
+	@printf "\n"
+# 	@printf "%b\n""$(COLOR_BOLD)PostHog Commands:$(COLOR_RESET)"
+# 	@printf "%b\n""  $(COLOR_GREEN)make posthog-status$(COLOR_RESET) - Check PostHog services"
+# 	@printf "%b\n""  $(COLOR_GREEN)make posthog-start$(COLOR_RESET) - Start PostHog services"
+# 	@printf "%b\n""  $(COLOR_GREEN)make posthog-stop$(COLOR_RESET) - Stop PostHog services"
+# 	@printf "%b\n""  $(COLOR_GREEN)make posthog-restart$(COLOR_RESET) - Restart PostHog services"
+# 	@printf "%b\n""  $(COLOR_GREEN)make posthog-clean$(COLOR_RESET) - Remove PostHog data"
+# 	@printf "%b\n""  $(COLOR_GREEN)make logs-posthog$(COLOR_RESET) - View PostHog logs"
+# 	@printf "\n"
+	@printf "%b\n""$(COLOR_BOLD)Quick Start:$(COLOR_RESET)"
+	@printf "%b\n""  1. $(COLOR_CYAN)make setup$(COLOR_RESET)  # First time only"
+	@printf "%b\n""  2. $(COLOR_CYAN)make up$(COLOR_RESET)     # Start development"
+	@printf "%b\n""  3. Open: $(COLOR_YELLOW)http://localhost:5173$(COLOR_RESET)"
+	@printf "\n"
 
 # ============================================================
 # Full Setup (Clone + Install + Config)
 # ============================================================
 setup: check-requirements clone install config
-	@echo -e "$(COLOR_BOLD)$(COLOR_GREEN)✓ Setup complete!$(COLOR_RESET)"
-	@echo -e ""
-	@echo -e "$(COLOR_BOLD)Next steps:$(COLOR_RESET)"
-	@echo -e "  1. Review and edit .env.dev files if needed:"
-	@echo -e "     - backend/.env.dev"
-	@echo -e "     - frontend/.env.dev"
-	@echo -e "     - model/.env.dev"
-	@echo -e ""
-	@echo -e "  2. Start development environment:"
-	@echo -e "     $(COLOR_CYAN)make up$(COLOR_RESET)"
-	@echo -e ""
-	@echo -e "  3. Access services:"
-	@echo -e "     - Frontend:      $(COLOR_YELLOW)http://localhost:5173$(COLOR_RESET)"
-	@echo -e "     - Backend API:   $(COLOR_YELLOW)http://localhost:3000$(COLOR_RESET)"
-	@echo -e "     - Model API:     $(COLOR_YELLOW)http://localhost:5051$(COLOR_RESET)"
-	@echo -e "     - Mongo Express: $(COLOR_YELLOW)http://localhost:8081$(COLOR_RESET) (admin/admin123)"
-	@echo -e ""
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_GREEN)✓ Setup complete!$(COLOR_RESET)"
+	@printf "\n"
+	@printf "%b\n""$(COLOR_BOLD)Next steps:$(COLOR_RESET)"
+	@printf "%b\n""  1. Review and edit .env.dev files if needed:"
+	@printf "%b\n""     - backend/.env.dev"
+	@printf "%b\n""     - frontend/.env.dev"
+	@printf "%b\n""     - model/.env.dev"
+	@printf "\n"
+	@printf "%b\n""  2. Start development environment:"
+	@printf "%b\n""     $(COLOR_CYAN)make up$(COLOR_RESET)"
+	@printf "\n"
+	@printf "%b\n""  3. Access services:"
+	@printf "%b\n""     - Frontend:      $(COLOR_YELLOW)http://localhost:5173$(COLOR_RESET)"
+	@printf "%b\n""     - Backend API:   $(COLOR_YELLOW)http://localhost:3000$(COLOR_RESET)"
+	@printf "%b\n""     - Model API:     $(COLOR_YELLOW)http://localhost:5051$(COLOR_RESET)"
+	@printf "%b\n""     - Mongo Express: $(COLOR_YELLOW)http://localhost:8081$(COLOR_RESET) (admin/admin123)"
+	@printf "\n"
 
 # ============================================================
 # Check Requirements
 # ============================================================
 check-requirements:
-	@echo -e "$(COLOR_BOLD)$(COLOR_BLUE)Checking requirements...$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_BLUE)Checking requirements...$(COLOR_RESET)"
 	@command -v gh >/dev/null 2>&1 || { echo "$(COLOR_BOLD)ERROR:$(COLOR_RESET) gh CLI is required. Install: brew install gh"; exit 1; }
 	@command -v docker >/dev/null 2>&1 || { echo "$(COLOR_BOLD)ERROR:$(COLOR_RESET) Docker is required. Install from docker.com"; exit 1; }
 	@command -v node >/dev/null 2>&1 || { echo "$(COLOR_BOLD)ERROR:$(COLOR_RESET) Node.js is required. Install: brew install node"; exit 1; }
 	@command -v python3 >/dev/null 2>&1 || { echo "$(COLOR_BOLD)ERROR:$(COLOR_RESET) Python 3 is required. Install: brew install python"; exit 1; }
-	@echo -e "$(COLOR_GREEN)✓ All requirements met$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_GREEN)✓ All requirements met$(COLOR_RESET)"
 
 # ============================================================
 # Clone Repositories
 # ============================================================
 clone:
-	@echo -e "$(COLOR_BOLD)$(COLOR_BLUE)Cloning repositories...$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_BLUE)Cloning repositories...$(COLOR_RESET)"
 	@for repo in $(REPOS); do \
 		if [ -d "$$repo" ]; then \
 			echo "$(COLOR_YELLOW)⊙ $$repo already exists, skipping...$(COLOR_RESET)"; \
@@ -159,16 +159,16 @@ clone:
 			gh repo clone $(GITHUB_ORG)/$$repo || exit 1; \
 		fi; \
 	done
-	@echo -e "$(COLOR_GREEN)✓ All repositories cloned$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_GREEN)✓ All repositories cloned$(COLOR_RESET)"
 
 # ============================================================
 # Install Dependencies
 # ============================================================
 install: install-npm install-python
-	@echo -e "$(COLOR_GREEN)✓ All dependencies installed$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_GREEN)✓ All dependencies installed$(COLOR_RESET)"
 
 install-npm:
-	@echo -e "$(COLOR_BOLD)$(COLOR_BLUE)Installing Node.js dependencies...$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_BLUE)Installing Node.js dependencies...$(COLOR_RESET)"
 	@for repo in $(NPM_REPOS); do \
 		if [ -d "$$repo" ]; then \
 			echo "$(COLOR_CYAN)→ Installing $$repo...$(COLOR_RESET)"; \
@@ -177,7 +177,7 @@ install-npm:
 	done
 
 install-python:
-	@echo -e "$(COLOR_BOLD)$(COLOR_BLUE)Setting up Python environments...$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_BLUE)Setting up Python environments...$(COLOR_RESET)"
 	@for repo in $(PYTHON_REPOS); do \
 		if [ -d "$$repo" ]; then \
 			echo "$(COLOR_CYAN)→ Setting up $$repo venv...$(COLOR_RESET)"; \
@@ -193,10 +193,10 @@ install-python:
 # Setup Configuration
 # ============================================================
 config: config-env config-docker
-	@echo -e "$(COLOR_GREEN)✓ Configuration complete$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_GREEN)✓ Configuration complete$(COLOR_RESET)"
 
 config-env:
-	@echo -e "$(COLOR_BOLD)$(COLOR_BLUE)Setting up environment files...$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_BLUE)Setting up environment files...$(COLOR_RESET)"
 	@# Backend
 	@if [ ! -f backend/.env.dev ]; then \
 		if [ -f backend/.env.dev.example ]; then \
@@ -250,7 +250,7 @@ config-env:
 	fi
 
 config-docker:
-	@echo -e "$(COLOR_BOLD)$(COLOR_BLUE)Setting up Docker Compose...$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_BLUE)Setting up Docker Compose...$(COLOR_RESET)"
 	@if [ ! -f $(COMPOSE_FILE) ]; then \
 		echo -e "$(COLOR_CYAN)→ Copying and fixing docker-compose.dev.yml paths...$(COLOR_RESET)"; \
 		sed 's|../../backend|../backend|g; s|../../frontend|../frontend|g; s|../../model|../model|g' \
@@ -263,41 +263,41 @@ config-docker:
 # Docker Compose Commands
 # ============================================================
 up:
-	@echo -e "$(COLOR_BOLD)$(COLOR_BLUE)Starting development environment...$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_BLUE)Starting development environment...$(COLOR_RESET)"
 	@docker-compose -f $(COMPOSE_FILE) up -d
-	@echo -e ""
-	@echo -e "$(COLOR_BOLD)$(COLOR_GREEN)✓ Development environment started!$(COLOR_RESET)"
-	@echo -e ""
-	@echo -e "$(COLOR_BOLD)Services:$(COLOR_RESET)"
-	@echo -e "  Frontend:      $(COLOR_YELLOW)http://localhost:5173$(COLOR_RESET)"
-	@echo -e "  Backend API:   $(COLOR_YELLOW)http://localhost:3000/api/v1/health$(COLOR_RESET)"
-	@echo -e "  Model API:     $(COLOR_YELLOW)http://localhost:5051/health$(COLOR_RESET)"
-	@echo -e "  Mongo Express: $(COLOR_YELLOW)http://localhost:8081$(COLOR_RESET) (admin/admin123)"
-# 	@echo -e "  PostHog:       $(COLOR_YELLOW)http://localhost:8000$(COLOR_RESET) (analytics)"
-	@echo -e ""
-	@echo -e "$(COLOR_BOLD)Commands:$(COLOR_RESET)"
-	@echo -e "  View logs:     $(COLOR_CYAN)make logs$(COLOR_RESET)"
-	@echo -e "  Stop:          $(COLOR_CYAN)make down$(COLOR_RESET)"
-	@echo -e "  Seed DB:       $(COLOR_CYAN)make seed$(COLOR_RESET)"
-	@echo -e ""
+	@printf "\n"
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_GREEN)✓ Development environment started!$(COLOR_RESET)"
+	@printf "\n"
+	@printf "%b\n""$(COLOR_BOLD)Services:$(COLOR_RESET)"
+	@printf "%b\n""  Frontend:      $(COLOR_YELLOW)http://localhost:5173$(COLOR_RESET)"
+	@printf "%b\n""  Backend API:   $(COLOR_YELLOW)http://localhost:3000/api/v1/health$(COLOR_RESET)"
+	@printf "%b\n""  Model API:     $(COLOR_YELLOW)http://localhost:5051/health$(COLOR_RESET)"
+	@printf "%b\n""  Mongo Express: $(COLOR_YELLOW)http://localhost:8081$(COLOR_RESET) (admin/admin123)"
+# 	@printf "%b\n""  PostHog:       $(COLOR_YELLOW)http://localhost:8000$(COLOR_RESET) (analytics)"
+	@printf "\n"
+	@printf "%b\n""$(COLOR_BOLD)Commands:$(COLOR_RESET)"
+	@printf "%b\n""  View logs:     $(COLOR_CYAN)make logs$(COLOR_RESET)"
+	@printf "%b\n""  Stop:          $(COLOR_CYAN)make down$(COLOR_RESET)"
+	@printf "%b\n""  Seed DB:       $(COLOR_CYAN)make seed$(COLOR_RESET)"
+	@printf "\n"
 
 down:
-	@echo -e "$(COLOR_BOLD)$(COLOR_BLUE)Stopping development environment...$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_BLUE)Stopping development environment...$(COLOR_RESET)"
 	@docker-compose -f $(COMPOSE_FILE) down
-	@echo -e "$(COLOR_GREEN)✓ Development environment stopped$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_GREEN)✓ Development environment stopped$(COLOR_RESET)"
 
 restart:
-	@echo -e "$(COLOR_BOLD)$(COLOR_BLUE)Restarting development environment...$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_BLUE)Restarting development environment...$(COLOR_RESET)"
 	@docker-compose -f $(COMPOSE_FILE) restart
-	@echo -e "$(COLOR_GREEN)✓ Development environment restarted$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_GREEN)✓ Development environment restarted$(COLOR_RESET)"
 
 rebuild:
-	@echo -e "$(COLOR_BOLD)$(COLOR_BLUE)Rebuilding containers...$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_BLUE)Rebuilding containers...$(COLOR_RESET)"
 	@docker-compose -f $(COMPOSE_FILE) up -d --build
-	@echo -e "$(COLOR_GREEN)✓ Containers rebuilt and started$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_GREEN)✓ Containers rebuilt and started$(COLOR_RESET)"
 
 clean:
-	@echo -e "$(COLOR_BOLD)$(COLOR_YELLOW)⚠️  This will delete all data (MongoDB, volumes)$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_YELLOW)⚠️  This will delete all data (MongoDB, volumes)$(COLOR_RESET)"
 	@read -p "Are you sure? [y/N] " -n 1 -r; \
 	echo; \
 	if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
@@ -310,16 +310,16 @@ clean:
 
 
 nuke:
-	@echo -e "$(COLOR_BOLD)$(COLOR_YELLOW)☢️  NUCLEAR OPTION ☢️$(COLOR_RESET)"
-	@echo -e "This will completely wipe:"
-	@echo -e "  - All containers (running and stopped)"
-	@echo -e "  - All images (acosus-*)"
-	@echo -e "  - All volumes (acosus-*)"
-	@echo -e "  - All networks (acosus-*)"
-	@echo -e "  - Build cache"
-	@echo -e ""
-	@echo -e "$(COLOR_BOLD)$(COLOR_YELLOW)⚠️  You will need to rebuild everything from scratch!$(COLOR_RESET)"
-	@echo -e ""
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_YELLOW)☢️  NUCLEAR OPTION ☢️$(COLOR_RESET)"
+	@printf "%b\n""This will completely wipe:"
+	@printf "%b\n""  - All containers (running and stopped)"
+	@printf "%b\n""  - All images (acosus-*)"
+	@printf "%b\n""  - All volumes (acosus-*)"
+	@printf "%b\n""  - All networks (acosus-*)"
+	@printf "%b\n""  - Build cache"
+	@printf "\n"
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_YELLOW)⚠️  You will need to rebuild everything from scratch!$(COLOR_RESET)"
+	@printf "\n"
 	@read -p "Are you ABSOLUTELY sure? [y/N] " -n 1 -r; \
 	echo; \
 	if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
@@ -357,11 +357,11 @@ nuke:
 
 # One-command full dev setup
 dev: config-docker up dev-init-wait dev-status
-	@echo -e "$(COLOR_BOLD)$(COLOR_GREEN)✓ Development environment ready!$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_GREEN)✓ Development environment ready!$(COLOR_RESET)"
 
 # Wait for init container to complete
 dev-init-wait:
-	@echo -e "$(COLOR_BOLD)$(COLOR_BLUE)Waiting for backend initialization to complete...$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_BLUE)Waiting for backend initialization to complete...$(COLOR_RESET)"
 	@timeout 120 sh -c 'until docker ps -a --filter "name=acosus-backend-init-dev" --filter "status=exited" --format "{{.Status}}" | grep -q "Exited (0)"; do \
 		echo "$(COLOR_CYAN)→ Waiting for database initialization...$(COLOR_RESET)"; \
 		sleep 5; \
@@ -372,55 +372,55 @@ dev-init-wait:
 		docker logs acosus-backend-init-dev; \
 		exit 1; \
 	}
-	@echo -e "$(COLOR_GREEN)✓ Backend initialization completed successfully$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_GREEN)✓ Backend initialization completed successfully$(COLOR_RESET)"
 
 # Show development URLs and status
 dev-status:
-	@echo -e ""
-	@echo -e "$(COLOR_BOLD)$(COLOR_CYAN)════════════════════════════════════════════════════════════════$(COLOR_RESET)"
-	@echo -e "$(COLOR_BOLD)$(COLOR_CYAN)  ACOSUS Development Environment$(COLOR_RESET)"
-	@echo -e "$(COLOR_BOLD)$(COLOR_CYAN)════════════════════════════════════════════════════════════════$(COLOR_RESET)"
-	@echo -e ""
-	@echo -e "$(COLOR_BOLD)Services:$(COLOR_RESET)"
-	@echo -e "  Frontend:      $(COLOR_YELLOW)http://localhost:5173$(COLOR_RESET)"
-	@echo -e "  Backend API:   $(COLOR_YELLOW)http://localhost:3000/api/v1/health$(COLOR_RESET)"
-	@echo -e "  Model API:     $(COLOR_YELLOW)http://localhost:5051/health$(COLOR_RESET)"
-	@echo -e "  Mongo Express: $(COLOR_YELLOW)http://localhost:8081$(COLOR_RESET) (admin/admin123)"
-	@echo -e ""
-	@echo -e "$(COLOR_BOLD)Commands:$(COLOR_RESET)"
-	@echo -e "  View logs:        $(COLOR_CYAN)make logs$(COLOR_RESET)"
-	@echo -e "  Init status:      $(COLOR_CYAN)make dev-init-status$(COLOR_RESET)"
-	@echo -e "  Re-run init:      $(COLOR_CYAN)make dev-reinit$(COLOR_RESET)"
-	@echo -e "  Fresh start:      $(COLOR_CYAN)make dev-fresh$(COLOR_RESET)"
-	@echo -e "  Stop:             $(COLOR_CYAN)make down$(COLOR_RESET)"
-	@echo -e ""
+	@printf "\n"
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_CYAN)════════════════════════════════════════════════════════════════$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_CYAN)  ACOSUS Development Environment$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_CYAN)════════════════════════════════════════════════════════════════$(COLOR_RESET)"
+	@printf "\n"
+	@printf "%b\n""$(COLOR_BOLD)Services:$(COLOR_RESET)"
+	@printf "%b\n""  Frontend:      $(COLOR_YELLOW)http://localhost:5173$(COLOR_RESET)"
+	@printf "%b\n""  Backend API:   $(COLOR_YELLOW)http://localhost:3000/api/v1/health$(COLOR_RESET)"
+	@printf "%b\n""  Model API:     $(COLOR_YELLOW)http://localhost:5051/health$(COLOR_RESET)"
+	@printf "%b\n""  Mongo Express: $(COLOR_YELLOW)http://localhost:8081$(COLOR_RESET) (admin/admin123)"
+	@printf "\n"
+	@printf "%b\n""$(COLOR_BOLD)Commands:$(COLOR_RESET)"
+	@printf "%b\n""  View logs:        $(COLOR_CYAN)make logs$(COLOR_RESET)"
+	@printf "%b\n""  Init status:      $(COLOR_CYAN)make dev-init-status$(COLOR_RESET)"
+	@printf "%b\n""  Re-run init:      $(COLOR_CYAN)make dev-reinit$(COLOR_RESET)"
+	@printf "%b\n""  Fresh start:      $(COLOR_CYAN)make dev-fresh$(COLOR_RESET)"
+	@printf "%b\n""  Stop:             $(COLOR_CYAN)make down$(COLOR_RESET)"
+	@printf "\n"
 
 # Run database initialization only
 dev-init-db:
-	@echo -e "$(COLOR_BOLD)$(COLOR_BLUE)Running database initialization...$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_BLUE)Running database initialization...$(COLOR_RESET)"
 	@docker-compose -f $(COMPOSE_FILE) up backend-init
-	@echo -e "$(COLOR_GREEN)✓ Database initialized$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_GREEN)✓ Database initialized$(COLOR_RESET)"
 
 # Show init container and database status
 dev-init-status:
-	@echo -e "$(COLOR_BOLD)$(COLOR_BLUE)════════════════════════════════════════════════════════════════$(COLOR_RESET)"
-	@echo -e "$(COLOR_BOLD)$(COLOR_BLUE)  Init Container Status$(COLOR_RESET)"
-	@echo -e "$(COLOR_BOLD)$(COLOR_BLUE)════════════════════════════════════════════════════════════════$(COLOR_RESET)"
-	@echo -e ""
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_BLUE)════════════════════════════════════════════════════════════════$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_BLUE)  Init Container Status$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_BLUE)════════════════════════════════════════════════════════════════$(COLOR_RESET)"
+	@printf "\n"
 	@docker ps -a --filter "name=acosus-backend-init-dev" --format "table {{.Names}}\t{{.Status}}\t{{.Image}}"
-	@echo -e ""
-	@echo -e "$(COLOR_BOLD)Database Version:$(COLOR_RESET)"
+	@printf "\n"
+	@printf "%b\n""$(COLOR_BOLD)Database Version:$(COLOR_RESET)"
 	@docker-compose -f $(COMPOSE_FILE) exec -T mongodb mongosh --quiet acosus-dev --eval "db.getCollection('_system').findOne({_id: 'db-version'})" 2>/dev/null || echo "  Not initialized yet"
-	@echo -e ""
-	@echo -e "$(COLOR_BOLD)Data Counts:$(COLOR_RESET)"
+	@printf "\n"
+	@printf "%b\n""$(COLOR_BOLD)Data Counts:$(COLOR_RESET)"
 	@docker-compose -f $(COMPOSE_FILE) exec -T mongodb mongosh --quiet acosus-dev --eval "print('  Users:', db.users.countDocuments()); print('  Quizzes:', db.quizzes.countDocuments());" 2>/dev/null || echo "  Database not ready"
-	@echo -e ""
+	@printf "\n"
 
 # Re-run initialization (useful for testing migration changes)
 dev-reinit:
-	@echo -e "$(COLOR_BOLD)$(COLOR_YELLOW)⚠️  This will re-run database initialization$(COLOR_RESET)"
-	@echo -e "Current data will not be deleted, but migrations will run again."
-	@echo -e ""
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_YELLOW)⚠️  This will re-run database initialization$(COLOR_RESET)"
+	@printf "%b\n""Current data will not be deleted, but migrations will run again."
+	@printf "\n"
 	@read -p "Are you sure? [y/N] " -n 1 -r; \
 	echo; \
 	if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
@@ -435,8 +435,8 @@ dev-reinit:
 
 # Fresh start (clean + rebuild + init)
 dev-fresh:
-	@echo -e "$(COLOR_BOLD)$(COLOR_YELLOW)⚠️  This will delete ALL development data$(COLOR_RESET)"
-	@echo -e ""
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_YELLOW)⚠️  This will delete ALL development data$(COLOR_RESET)"
+	@printf "\n"
 	@read -p "Are you sure? [y/N] " -n 1 -r; \
 	echo; \
 	if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
@@ -487,26 +487,26 @@ logs-mongodb:
 # Status Commands
 # ============================================================
 status:
-	@echo -e "$(COLOR_BOLD)$(COLOR_BLUE)Container Status:$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_BLUE)Container Status:$(COLOR_RESET)"
 	@docker-compose -f $(COMPOSE_FILE) ps
 
 # ============================================================
 # Database Commands
 # ============================================================
 seed:
-	@echo -e "$(COLOR_BOLD)$(COLOR_BLUE)Seeding database...$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_BLUE)Seeding database...$(COLOR_RESET)"
 	@docker-compose -f $(COMPOSE_FILE) exec backend npm run seed:db
-	@echo -e "$(COLOR_GREEN)✓ Database seeded$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_GREEN)✓ Database seeded$(COLOR_RESET)"
 
 seed-admin:
-	@echo -e "$(COLOR_BOLD)$(COLOR_BLUE)Seeding admin user...$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_BLUE)Seeding admin user...$(COLOR_RESET)"
 	@docker-compose -f $(COMPOSE_FILE) exec backend npm run seed:admin
-	@echo -e "$(COLOR_GREEN)✓ Admin user created$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_GREEN)✓ Admin user created$(COLOR_RESET)"
 
 seed-quiz:
-	@echo -e "$(COLOR_BOLD)$(COLOR_BLUE)Seeding quiz data...$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_BLUE)Seeding quiz data...$(COLOR_RESET)"
 	@docker-compose -f $(COMPOSE_FILE) exec backend npm run seed:quiz-init
-	@echo -e "$(COLOR_GREEN)✓ Quiz data seeded$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_GREEN)✓ Quiz data seeded$(COLOR_RESET)"
 
 # ============================================================
 # Shell Commands
@@ -536,47 +536,47 @@ stats:
 # Update Commands
 # ============================================================
 pull:
-	@echo -e "$(COLOR_BOLD)$(COLOR_BLUE)Pulling latest changes...$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_BOLD)$(COLOR_BLUE)Pulling latest changes...$(COLOR_RESET)"
 	@for repo in $(REPOS); do \
 		if [ -d "$$repo" ]; then \
 			echo "$(COLOR_CYAN)→ Pulling $$repo...$(COLOR_RESET)"; \
 			cd $$repo && git pull && cd ..; \
 		fi; \
 	done
-	@echo -e "$(COLOR_GREEN)✓ All repositories updated$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_GREEN)✓ All repositories updated$(COLOR_RESET)"
 
 update: pull install
-	@echo -e "$(COLOR_GREEN)✓ Update complete$(COLOR_RESET)"
+	@printf "%b\n""$(COLOR_GREEN)✓ Update complete$(COLOR_RESET)"
 
 # ============================================================
 # PostHog Commands
 # ============================================================
 # posthog-status:
-# 	@echo -e "$(COLOR_BOLD)$(COLOR_BLUE)PostHog Services Status:$(COLOR_RESET)"
+# 	@printf "%b\n""$(COLOR_BOLD)$(COLOR_BLUE)PostHog Services Status:$(COLOR_RESET)"
 # 	@docker-compose -f $(COMPOSE_FILE) ps postgres-posthog clickhouse-posthog redis-posthog posthog
 
 # posthog-restart:
-# 	@echo -e "$(COLOR_BOLD)$(COLOR_BLUE)Restarting PostHog services...$(COLOR_RESET)"
+# 	@printf "%b\n""$(COLOR_BOLD)$(COLOR_BLUE)Restarting PostHog services...$(COLOR_RESET)"
 # 	@docker-compose -f $(COMPOSE_FILE) restart postgres-posthog clickhouse-posthog redis-posthog posthog
-# 	@echo -e "$(COLOR_GREEN)✓ PostHog services restarted$(COLOR_RESET)"
+# 	@printf "%b\n""$(COLOR_GREEN)✓ PostHog services restarted$(COLOR_RESET)"
 
 # posthog-stop:
-# 	@echo -e "$(COLOR_BOLD)$(COLOR_BLUE)Stopping PostHog services...$(COLOR_RESET)"
+# 	@printf "%b\n""$(COLOR_BOLD)$(COLOR_BLUE)Stopping PostHog services...$(COLOR_RESET)"
 # 	@docker-compose -f $(COMPOSE_FILE) stop postgres-posthog clickhouse-posthog redis-posthog posthog
-# 	@echo -e "$(COLOR_GREEN)✓ PostHog services stopped$(COLOR_RESET)"
+# 	@printf "%b\n""$(COLOR_GREEN)✓ PostHog services stopped$(COLOR_RESET)"
 
 # posthog-start:
-# 	@echo -e "$(COLOR_BOLD)$(COLOR_BLUE)Starting PostHog services...$(COLOR_RESET)"
+# 	@printf "%b\n""$(COLOR_BOLD)$(COLOR_BLUE)Starting PostHog services...$(COLOR_RESET)"
 # 	@docker-compose -f $(COMPOSE_FILE) up -d postgres-posthog clickhouse-posthog redis-posthog posthog
-# 	@echo -e "$(COLOR_GREEN)✓ PostHog services started$(COLOR_RESET)"
-# 	@echo -e ""
-# 	@echo -e "$(COLOR_BOLD)Access PostHog:$(COLOR_RESET)"
-# 	@echo -e "  Direct:  $(COLOR_YELLOW)http://localhost:8000$(COLOR_RESET)"
-# 	@echo -e "  Proxy:   $(COLOR_YELLOW)http://localhost:3000/api/services/posthog$(COLOR_RESET)"
-# 	@echo -e ""
+# 	@printf "%b\n""$(COLOR_GREEN)✓ PostHog services started$(COLOR_RESET)"
+# 	@printf "\n"
+# 	@printf "%b\n""$(COLOR_BOLD)Access PostHog:$(COLOR_RESET)"
+# 	@printf "%b\n""  Direct:  $(COLOR_YELLOW)http://localhost:8000$(COLOR_RESET)"
+# 	@printf "%b\n""  Proxy:   $(COLOR_YELLOW)http://localhost:3000/api/services/posthog$(COLOR_RESET)"
+# 	@printf "\n"
 
 # posthog-clean:
-# 	@echo -e "$(COLOR_BOLD)$(COLOR_YELLOW)⚠️  This will delete all PostHog data$(COLOR_RESET)"
+# 	@printf "%b\n""$(COLOR_BOLD)$(COLOR_YELLOW)⚠️  This will delete all PostHog data$(COLOR_RESET)"
 # 	@read -p "Are you sure? [y/N] " -n 1 -r; \
 # 	echo; \
 # 	if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
